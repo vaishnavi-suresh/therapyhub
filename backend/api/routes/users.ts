@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { createUserController, updateUserController, deleteUserController, getUserController, getAllUsersController, getAllTherapistsController, getTherapistByEmailController, addClientToTherapistController, getMeController } from '../controllers/userController';
-import { checkJwt, requiredRoles, requiredUserId, requireUserOrTherapist } from '../../middleware/auth';
+import { createUserController, updateUserController, deleteUserController, getUserController, getAllUsersController, getAllTherapistsController, getTherapistByEmailController, getTherapistClientsController, addClientToTherapistController, getMeController } from '../controllers/userController';
+import { checkJwt, enrichUserFromDb, requiredRoles, requiredUserId, requireUserOrTherapist } from '../../middleware/auth';
 
 const userRouter = Router();
 
 userRouter.get('/me', checkJwt, getMeController);
+userRouter.get('/therapist/clients', checkJwt, enrichUserFromDb, requiredRoles('therapist'), getTherapistClientsController);
 userRouter.post('/', checkJwt, createUserController);
 userRouter.get('/therapists', checkJwt, getAllTherapistsController);
 userRouter.get('/therapists/:email', checkJwt, getTherapistByEmailController);

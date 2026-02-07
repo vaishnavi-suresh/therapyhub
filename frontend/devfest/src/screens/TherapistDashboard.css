@@ -1,0 +1,70 @@
+.therapist-dashboard {
+  padding: 1.5rem;
+}
+
+.therapist-dashboard h2 {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+}
+
+.therapist-muted {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.client-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.client-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.client-tile:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(100, 108, 255, 0.4);
+}
+
+.client-name {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.client-email {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+}
+
+.client-activity {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+@media (prefers-color-scheme: light) {
+  .therapist-muted { color: rgba(0, 0, 0, 0.5); }
+  .client-tile {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  .client-tile:hover {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(100, 108, 255, 0.4);
+  }
+  .client-email { color: rgba(0, 0, 0, 0.6); }
+  .client-activity { color: rgba(0, 0, 0, 0.5); }
+}

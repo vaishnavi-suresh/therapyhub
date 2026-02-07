@@ -7,6 +7,17 @@ import { Conversation } from '../models/Conversation';
 import { CarePlan } from '../models/CarePlan';
 import { v4 as uuidv4 } from 'uuid';
 
+const getClientConversationsController = async (req: Request, res: Response) => {
+    const clientUserId = req.params.user_id;
+    const therapistId = (req as any).user?.userId;
+    if (!therapistId) return res.status(401).json({ message: 'Unauthorized' });
+    const { getUser } = await import('../services/users');
+    const client = await getUser(clientUserId as string);
+    if (!client || client.therapist_id !== therapistId) return res.status(403).json({ message: 'Forbidden' });
+    const conversations = await getConversationsByUserId(clientUserId as string);
+    res.json(conversations);
+};
+
 const getMyConversationsController = async (req: Request, res: Response) => {
     const sub = (req as any).user?.sub;
     if (!sub) return res.status(401).json({ message: 'Unauthorized' });
@@ -95,7 +106,7 @@ const closeConversationController = async (req: Request, res: Response) => {
 
     await updateConversation(conversation_id, { care_plan_id: carePlanId } as any);
 
-    res.json({ care_plan_id: carePlanId, care_plan_description: carePlanText });
+    res.json({ conversationClosed: true });
 };
 
-export { getMyConversationsController, getConversationController, createConversationController, updateConversationController, deleteConversationController, closeConversationController };
+export { getMyConversationsController, getClientConversationsController, getConversationController, createConversationController, updateConversationController, deleteConversationController, closeConversationController };

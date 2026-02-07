@@ -45,6 +45,10 @@ const deleteUser = async (user_id: string) => {
     return result.deletedCount;
 };
 
+const getClientsByTherapistId = async (therapist_user_id: string) => {
+    return userCollection.find({ therapist_id: therapist_user_id }).toArray();
+};
+
 const addClientToTherapist = async (therapist_user_id: string, client_user_id: string) => {
     const therapist = await userCollection.updateOne(
         { user_id: therapist_user_id },
@@ -57,4 +61,4 @@ const addClientToTherapist = async (therapist_user_id: string, client_user_id: s
     return { therapist, client };
 };
 
-export { getUser, createUser, updateUser, deleteUser, getAllUsers, getAllTherapists, getTherapistByEmail, getUserByExternalAuthId, addClientToTherapist };
+export { getUser, createUser, updateUser, deleteUser, getAllUsers, getAllTherapists, getTherapistByEmail, getUserByExternalAuthId, getClientsByTherapistId, addClientToTherapist };

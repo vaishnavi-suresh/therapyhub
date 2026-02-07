@@ -1,4 +1,4 @@
-import { getUser, createUser, updateUser, deleteUser, getAllUsers, getAllTherapists, getTherapistByEmail, getUserByExternalAuthId, addClientToTherapist } from '../services/users';
+import { getUser, createUser, updateUser, deleteUser, getAllUsers, getAllTherapists, getTherapistByEmail, getUserByExternalAuthId, getClientsByTherapistId, addClientToTherapist } from '../services/users';
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '../models/User';
@@ -74,6 +74,26 @@ const getMeController = async (req: Request, res: Response) => {
     return res.json(user);
 };
 
+const getTherapistClientsController = async (req: Request, res: Response) => {
+    const therapistId = (req as any).user?.userId;
+    if (!therapistId) return res.status(401).json({ message: 'Unauthorized' });
+    const { getConversationsByUserId } = await import('../services/conversations');
+    const clients = await getClientsByTherapistId(therapistId);
+    const withActivity = await Promise.all(clients.map(async (c: any) => {
+        const convos = await getConversationsByUserId(c.user_id);
+        const lastActivity = convos.length > 0
+            ? new Date(Math.max(...convos.map((x: any) => new Date(x.conversation_updated_at || x.conversation_created_at).getTime())))
+            : null;
+        return { ...c, last_activity: lastActivity?.toISOString() ?? null };
+    }));
+    withActivity.sort((a: any, b: any) => {
+        if (!a.last_activity) return 1;
+        if (!b.last_activity) return -1;
+        return new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime();
+    });
+    res.json(withActivity);
+};
+
 const addClientToTherapistController = async (req: Request, res: Response) => {
     const { therapist_user_id, client_user_id } = req.body;
     if (!therapist_user_id || !client_user_id) {
@@ -83,4 +103,4 @@ const addClientToTherapistController = async (req: Request, res: Response) => {
     res.json({ success: true });
 };
 
-export { createUserController, updateUserController, deleteUserController, getUserController, getMeController, getAllUsersController, getAllTherapistsController, getTherapistByEmailController, addClientToTherapistController };
+export { createUserController, updateUserController, deleteUserController, getUserController, getMeController, getAllUsersController, getAllTherapistsController, getTherapistByEmailController, getTherapistClientsController, addClientToTherapistController };

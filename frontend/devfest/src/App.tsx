@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { apiFetch } from './api/client';
 import Onboarding from './screens/Onboarding';
+import Dashboard from './screens/Dashboard';
+import TherapistDashboard from './screens/TherapistDashboard';
 import './App.css';
 
 function App() {
@@ -14,7 +16,7 @@ function App() {
     user,
     getAccessTokenSilently,
   } = useAuth0();
-  const [profile, setProfile] = useState<{ user_id: string } | null | undefined>(undefined);
+  const [profile, setProfile] = useState<{ user_id: string; therapist_id?: string | null; role?: string } | null | undefined>(undefined);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -45,13 +47,22 @@ function App() {
     return <Onboarding />;
   }
 
-  return isAuthenticated ? (
-    <>
-      <p>Logged in as {user?.email}</p>
-      <h1>User Profile</h1>
-      <pre>{JSON.stringify(user, null, 2)}</pre>
-      <button onClick={logout}>Logout</button>
-    </>
+  return isAuthenticated && profile ? (
+    <div className="app-authenticated">
+      <header className="app-header">
+        <span>Logged in as {user?.email}</span>
+        <button onClick={logout}>Logout</button>
+      </header>
+      {profile.role === 'user' ? (
+        <Dashboard profile={{ user_id: profile.user_id, therapist_id: profile.therapist_id ?? null, role: profile.role }} />
+      ) : profile.role === 'therapist' ? (
+        <TherapistDashboard />
+      ) : (
+        <div className="therapist-view">
+          <p>Therapy chat is available for clients only.</p>
+        </div>
+      )}
+    </div>
   ) : (
     <>
       {error && <p>Error: {error.message}</p>}

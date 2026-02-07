@@ -20,7 +20,7 @@ app.use(cors({
 }));
 app.use(helmet());
 app.use(userRouter);
-app.use(carePlanRouter);
+app.use('/care_plans', carePlanRouter);
 app.use('/conversations', conversationRouter);
 app.use(messageRouter);
 

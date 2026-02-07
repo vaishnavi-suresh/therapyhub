@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { Message } from '../models/Message';
 import { getMessages, getMessage, createMessage, updateMessage, deleteMessage } from '../services/message';
+import { getConversation } from '../services/conversations';
 import { createTherapistBotResponse } from '../../utils/genAI';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,6 +20,11 @@ const getMessageController = async (req: Request, res: Response) => {
 const createMessageController = async (req: Request, res: Response) => {
     const { user_id, conversation_id } = req.params;
     const { message_content, role, therapist_id } = req.body;
+
+    const conversation = await getConversation(conversation_id as string);
+    if (conversation?.care_plan_id) {
+        return res.status(403).json({ message: 'Cannot send messages to a closed conversation' });
+    }
 
     if ((role as string) === 'bot') {
         const botMessage = new Message({
