@@ -4,7 +4,7 @@ interface Message extends Document {
     message_id: string;
     conversation_id: string;
     user_id: string;
-    role: ['user', 'bot'];
+    role: 'user' | 'bot';
     therapist_id: string;
     message_content: string;
     message_created_at: Date;
@@ -12,7 +12,7 @@ interface Message extends Document {
 
 const messageSchema = new Schema({
     message_id: { type: String, required: true },
-    chat_id: { type: String, required: true },
+    conversation_id: { type: String, required: true },
     user_id: { type: String, required: true },
     role: { type: String, required: true },
     therapist_id: { type: String, required: true },

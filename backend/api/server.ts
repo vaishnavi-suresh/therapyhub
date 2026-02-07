@@ -21,7 +21,7 @@ app.use(cors({
 app.use(helmet());
 app.use(userRouter);
 app.use(carePlanRouter);
-app.use(conversationRouter);
+app.use('/conversations', conversationRouter);
 app.use(messageRouter);
 
 app.listen(PORT, () => {

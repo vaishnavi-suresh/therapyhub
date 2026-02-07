@@ -11,6 +11,9 @@ const getConversation = async (conversation_id: string) => {
     return conversation;
 };
 
+const getConversationsByUserId = async (user_id: string) =>
+    conversationCollection.find({ user_id }).sort({ conversation_created_at: -1 }).toArray();
+
 const createConversation = async (conversation: Conversation) => {
     const result = await conversationCollection.insertOne(conversation);
     return result.insertedId;
@@ -26,4 +29,4 @@ const deleteConversation = async (conversation_id: string) => {
     return result.deletedCount;
 };
 
-export { getConversation, createConversation, updateConversation, deleteConversation };
+export { getConversation, getConversationsByUserId, createConversation, updateConversation, deleteConversation };

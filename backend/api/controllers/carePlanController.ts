@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { getCarePlan, createCarePlan, updateCarePlan, deleteCarePlan } from '../services/careplans';
 import { CarePlan } from '../models/CarePlan';
+import { createCarePlan as createCarePlanFromMessages } from '../../utils/genAI';
 import { v4 as uuidv4 } from 'uuid';
 
 const getCarePlanController = async (req: Request, res: Response) => {
@@ -24,6 +25,20 @@ const createCarePlanController = async (req: Request, res: Response) => {
     res.json(carePlan);
 };
 
+const createCarePlanFromMessagesController = async (req: Request, res: Response) => {
+    const { messages, user_id, therapist_id, conversation_id } = req.body;
+    const carePlan = await createCarePlanFromMessages(messages);
+    const payload = new CarePlan({
+        care_plan_id: uuidv4(),
+        user_id: user_id as string,
+        therapist_id: therapist_id as string,
+        conversation_id: conversation_id as string,
+        care_plan_description: carePlan,
+        care_plan_created_at: new Date(),
+        care_plan_updated_at: new Date(),
+    });
+    res.json(carePlan);
+};
 const updateCarePlanController = async (req: Request, res: Response) => {
     const { care_plan_id } = req.params;
     const { user_id, therapist_id, care_plan_name, care_plan_description } = req.body;

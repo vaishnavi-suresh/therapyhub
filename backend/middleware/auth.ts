@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { expressjwt } from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
 import dotenv from 'dotenv';
-import { getUser } from '../api/services/users';
+import { getUser, getUserByExternalAuthId } from '../api/services/users';
 dotenv.config();
 
 declare global {
@@ -25,6 +25,20 @@ const checkJwt = expressjwt({
     algorithms: ['RS256'],
     requestProperty: 'user',
 });
+
+const enrichUserFromDb = async (req: Request, res: Response, next: NextFunction) => {
+    const sub = (req.user as any)?.sub;
+    if (!sub) return next();
+    try {
+        const user = await getUserByExternalAuthId(sub);
+        if (user) {
+            (req.user as any).userId = user.user_id;
+            (req.user as any).role = user.role;
+        }
+    } catch {
+    }
+    next();
+};
 
 const requiredRoles = (role: string) => {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -63,4 +77,4 @@ const requireUserOrTherapist = async (req: Request, res: Response, next: NextFun
     return res.status(403).json({ message: 'Forbidden: access restricted to the user or their therapist' });
 };
 
-export { checkJwt, requiredRoles, requiredUserId, requireUserOrTherapist };
+export { checkJwt, enrichUserFromDb, requiredRoles, requiredUserId, requireUserOrTherapist };
