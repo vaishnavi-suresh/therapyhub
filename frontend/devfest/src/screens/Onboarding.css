@@ -1,0 +1,112 @@
+.onboarding {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.onboarding-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  min-width: 320px;
+  max-width: 440px;
+}
+
+.onboarding-card h1 {
+  margin: 0 0 1.5rem;
+  font-size: 1.75rem;
+}
+
+.onboarding-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.onboarding-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.onboarding-form input[type='text'],
+.onboarding-form input[type='tel'],
+.onboarding-form input[type='email'] {
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  color: inherit;
+}
+
+.onboarding-form input:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.onboarding-radio {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.therapist-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.therapist-list li {
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.therapist-list li:last-child {
+  border-bottom: none;
+}
+
+.therapist-list li:hover,
+.therapist-list li.selected {
+  background: rgba(100, 108, 255, 0.2);
+}
+
+.onboarding-hint {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0.25rem 0 0;
+}
+
+.onboarding-selected {
+  font-size: 0.9rem;
+  color: #646cff;
+  margin: 0.5rem 0 0;
+}
+
+.onboarding-error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+}
+
+.onboarding-form button {
+  margin-top: 0.5rem;
+  padding: 0.65rem 1.25rem;
+}

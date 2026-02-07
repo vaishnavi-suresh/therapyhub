@@ -1,0 +1,66 @@
+import { Request, Response, NextFunction } from 'express';
+import { expressjwt } from 'express-jwt';
+import jwksRsa from 'jwks-rsa';
+import dotenv from 'dotenv';
+import { getUser } from '../api/services/users';
+dotenv.config();
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: { role?: string, userId?: string, therapistId?: string };
+        }
+    }
+}
+
+const checkJwt = expressjwt({
+    secret: jwksRsa.expressJwtSecret({
+        cache: true,
+        rateLimit: true,
+        jwksRequestsPerMinute: 5,
+        jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
+    }),
+    audience: process.env.AUTH0_AUDIENCE,
+    issuer: `https://${process.env.AUTH0_DOMAIN}/`,
+    algorithms: ['RS256'],
+    requestProperty: 'user',
+});
+
+const requiredRoles = (role: string) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (req.user?.role !== role) {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        next();
+    };
+};
+
+const requiredUserId = (req: Request, res: Response, next: NextFunction) => {
+    const requestedUserId = req.params.user_id;
+    const authUserId = req.user?.userId;
+    if (!authUserId || requestedUserId !== authUserId) {
+        return res.status(403).json({ message: 'Forbidden: access restricted to the user' });
+    }
+    next();
+};
+
+const requireUserOrTherapist = async (req: Request, res: Response, next: NextFunction) => {
+    const requestedUserId = req.params.user_id;
+    const authUserId = req.user?.userId;
+    if (!authUserId) {
+        return res.status(403).json({ message: 'Forbidden' });
+    }
+    if (requestedUserId === authUserId) {
+        return next(); 
+    }
+    try {
+        const requestedUser = await getUser(requestedUserId);
+        if (requestedUser?.therapist_id === authUserId) {
+            return next(); 
+        }
+    } catch {
+    }
+    return res.status(403).json({ message: 'Forbidden: access restricted to the user or their therapist' });
+};
+
+export { checkJwt, requiredRoles, requiredUserId, requireUserOrTherapist };

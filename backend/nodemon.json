@@ -1,0 +1,6 @@
+{
+  "watch": ["api", "middleware"],
+  "ext": "ts,json",
+  "ignore": ["node_modules", "coverage", "**/*.test.ts"],
+  "exec": "ts-node api/server.ts"
+}
