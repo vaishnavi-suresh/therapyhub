@@ -37,6 +37,35 @@
   margin: 0;
 }
 
+.therapist-tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.therapist-tab {
+  padding: 0.5rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.therapist-tab:hover {
+  color: var(--color-text);
+}
+
+.therapist-tab.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
 .therapist-section {
   padding: 1.5rem 2rem 2rem;
   max-width: 1200px;

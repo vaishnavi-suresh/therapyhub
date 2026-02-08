@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { createMeetingRecording, getMeetingRecordings, getMeetingRecording, updateMeetingRecording, deleteMeetingRecording } from '../services/meeting_recordings';
+import { transcribeAudio } from '../services/transcription';
+import { createTranscriptSummary } from '../../utils/genAI';
 import { MeetingRecording } from '../models/MeetingRecording';
 import { v4 as uuidv4 } from 'uuid';
 import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
@@ -145,7 +147,7 @@ const getAllMeetingDataController = async (req: Request, res: Response) => {
     
     // Generate signed URLs for each recording
     const recordingsWithSignedUrls = await Promise.all(
-        meetingRecordings.map(async (recording) => {
+        meetingRecordings.map(async (recording: MeetingRecording) => {
             if (recording.recording_url) {
                 try {
                     const signedUrl = await getSignedRecordingUrl(recording.recording_url);
@@ -235,6 +237,47 @@ async function createRoom(): Promise<string> {
   }
   const data = (await res.json()) as { roomId: string };
   return data.roomId;
+}
+
+/**
+ * Transcribe a recording asynchronously and update the transcript in the database
+ */
+async function transcribeRecordingAsync(meetingId: string, recordingUrl: string): Promise<void> {
+  try {
+    // Generate a signed URL with longer expiration (24 hours) for ElevenLabs to access
+    const signedUrl = await getSignedRecordingUrl(recordingUrl, 86400); // 24 hours
+    
+    console.log('🎤 Starting transcription for meeting:', meetingId);
+    const transcript = await transcribeAudio(signedUrl);
+    
+    if (transcript) {
+      // Update the recording with the transcript
+      await updateMeetingRecording(meetingId, { transcript } as any);
+      console.log('✅ Transcript saved for meeting:', meetingId);
+      
+      // Generate summary using AI
+      try {
+        console.log('🤖 Generating summary for meeting:', meetingId);
+        const summary = await createTranscriptSummary(transcript);
+        
+        if (summary) {
+          // Update the recording with the summary in the analysis field
+          await updateMeetingRecording(meetingId, { analysis: summary } as any);
+          console.log('✅ Summary saved for meeting:', meetingId);
+        } else {
+          console.warn('⚠️ No summary generated for meeting:', meetingId);
+        }
+      } catch (summaryError) {
+        console.error('❌ Summary generation error for meeting', meetingId, ':', summaryError);
+        // Don't throw - summary generation failure shouldn't break the flow
+      }
+    } else {
+      console.warn('⚠️ No transcript generated for meeting:', meetingId);
+    }
+  } catch (error) {
+    console.error('❌ Transcription error for meeting', meetingId, ':', error);
+    // Don't throw - transcription is optional
+  }
 }
 
 // Process recording: download from VideoSDK URL, upload to S3, save to MongoDB
@@ -341,6 +384,13 @@ Original error: ${s3Error.message}`;
     // The recording has been saved using the same service function that the route uses
     // This ensures consistency with POST /meeting_recordings/:user_id/:therapist_id endpoint
     // The route controller (createMeetingRecordingController) calls the same createMeetingRecording service
+    
+    // Transcribe the recording asynchronously (don't block on this)
+    const savedMeetingId = savedRecording?.meeting_id || payload.meeting_id;
+    transcribeRecordingAsync(savedMeetingId, recording_url).catch((error) => {
+      console.error('❌ Background transcription failed:', error);
+      // Don't throw - transcription failure shouldn't break the flow
+    });
   } catch (mongoError) {
     console.error('❌ Failed to save to MongoDB:', mongoError);
     // Don't throw - we still want to delete the session even if MongoDB save fails

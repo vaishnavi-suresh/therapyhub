@@ -148,4 +148,11 @@ OUTPUT FORMAT:
 - End most messages with 1 gentle question or a choice of 2 options (e.g., “Want grounding or problem-solving?”).
 `;
 
-export { treatmentPlanPrompt, therapeuticBotSystemPrompt };
+const transcriptSummaryPrompt = (transcript: string) => `
+You are a licensed mental health clinician summarizing a transcript of a therapy session.
+
+Your task is to analyze the transcript and produce a summary of the session.
+
+Return the summary.
+`;
+export { treatmentPlanPrompt, therapeuticBotSystemPrompt, transcriptSummaryPrompt };

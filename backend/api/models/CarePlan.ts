@@ -1,6 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 
-interface CarePlan extends Document {
+export interface CarePlan extends Document {
     care_plan_id: string;
     user_id: string;
     therapist_id: string;

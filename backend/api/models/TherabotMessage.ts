@@ -1,6 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 
-interface TherabotMessage extends Document {
+export interface TherabotMessage extends Document {
     message_id: string;
     conversation_id: string;
     user_id: string;

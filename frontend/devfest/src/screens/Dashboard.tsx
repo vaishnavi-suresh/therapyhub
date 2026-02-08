@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { apiFetch } from '../api/client';
+import VideoCall from '../components/VideoCall';
 import './Dashboard.css';
 
 type Message = {
@@ -43,7 +44,7 @@ export default function Dashboard({ profile }: { profile: Profile }) {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [closing, setClosing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chat' | 'homework'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'homework' | 'video'>('chat');
   const [homeworks, setHomeworks] = useState<Homework[]>([]);
   const [homeworksLoading, setHomeworksLoading] = useState(false);
   const [selectedHomeworkId, setSelectedHomeworkId] = useState<string | null>(null);
@@ -241,62 +242,72 @@ export default function Dashboard({ profile }: { profile: Profile }) {
         >
           Homework
         </button>
+        {canChat && (
+          <button
+            type="button"
+            className={activeTab === 'video' ? 'active' : ''}
+            onClick={() => setActiveTab('video')}
+          >
+            Video Call
+          </button>
+        )}
       </nav>
       <div className="dashboard-body">
-        <aside className="dashboard-sidebar">
-        {activeTab === 'chat' ? (
-          <>
-        <button type="button" className="new-chat-btn" onClick={() => { setSelectedId(null); setMessages([]); }}>
-          + New chat
-        </button>
-        {loading ? (
-          <p className="dashboard-muted">Loading…</p>
-        ) : (
-          <>
-            <h3>Conversations</h3>
-            {activeConversations.length > 0 && (
-              <ul className="conversation-list">
-                {activeConversations.map((c) => (
-                  <li key={c.conversation_id}>
-                    <button
-                      type="button"
-                      className={selectedId === c.conversation_id ? 'selected' : ''}
-                      onClick={() => setSelectedId(c.conversation_id)}
-                    >
-                      {new Date(c.conversation_created_at).toLocaleDateString()}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {(activeConversations.length === 0 && archivedConversations.length === 0) && (
-              <p className="dashboard-muted">No conversations yet</p>
-            )}
-            {archivedConversations.length > 0 && (
+        {activeTab !== 'video' && (
+          <aside className="dashboard-sidebar">
+            {activeTab === 'chat' ? (
               <>
-                <h3 className="archive-header">Archive</h3>
-                <ul className="conversation-list archive-list">
-                  {archivedConversations.map((c) => (
-                    <li key={c.conversation_id}>
-                      <button
-                        type="button"
-                        className={selectedId === c.conversation_id ? 'selected' : ''}
-                        onClick={() => setSelectedId(c.conversation_id)}
-                      >
-                        {new Date(c.conversation_created_at).toLocaleDateString()}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <button type="button" className="new-chat-btn" onClick={() => { setSelectedId(null); setMessages([]); }}>
+                  + New chat
+                </button>
+                {loading ? (
+                  <p className="dashboard-muted">Loading…</p>
+                ) : (
+                  <>
+                    <h3>Conversations</h3>
+                    {activeConversations.length > 0 && (
+                      <ul className="conversation-list">
+                        {activeConversations.map((c) => (
+                          <li key={c.conversation_id}>
+                            <button
+                              type="button"
+                              className={selectedId === c.conversation_id ? 'selected' : ''}
+                              onClick={() => setSelectedId(c.conversation_id)}
+                            >
+                              {new Date(c.conversation_created_at).toLocaleDateString()}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {(activeConversations.length === 0 && archivedConversations.length === 0) && (
+                      <p className="dashboard-muted">No conversations yet</p>
+                    )}
+                    {archivedConversations.length > 0 && (
+                      <>
+                        <h3 className="archive-header">Archive</h3>
+                        <ul className="conversation-list archive-list">
+                          {archivedConversations.map((c) => (
+                            <li key={c.conversation_id}>
+                              <button
+                                type="button"
+                                className={selectedId === c.conversation_id ? 'selected' : ''}
+                                onClick={() => setSelectedId(c.conversation_id)}
+                              >
+                                {new Date(c.conversation_created_at).toLocaleDateString()}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
               </>
             )}
-          </>
-        )}
-          </>
-        ) : (
-          <>
-            <h3>Homework</h3>
-            {!therapistId ? (
+              </>
+            ) : (
+              <>
+                <h3>Homework</h3>
+                {!therapistId ? (
               <p className="dashboard-muted">Connect with a therapist to see homework.</p>
             ) : homeworksLoading ? (
               <p className="dashboard-muted">Loading…</p>
@@ -344,11 +355,12 @@ export default function Dashboard({ profile }: { profile: Profile }) {
                 )}
               </>
             )}
-          </>
+              </>
+            )}
+          </aside>
         )}
-        </aside>
-        <main className="dashboard-main">
-        {activeTab === 'chat' ? (
+        <main className={`dashboard-main ${activeTab === 'video' ? 'dashboard-main-full' : ''}`}>
+          {activeTab === 'chat' ? (
           <>
         <div className="chat-header">
           <h2>Harbor</h2>
@@ -405,6 +417,14 @@ export default function Dashboard({ profile }: { profile: Profile }) {
         )}
         {!canChat && <p className="dashboard-muted">Connect with a therapist to use the chat.</p>}
           </>
+        ) : activeTab === 'video' ? (
+          <div className="dashboard-video-container">
+            <VideoCall
+              therapistId={therapistId}
+              userName={profile.user_id}
+              userRole={profile.role as 'user' | 'therapist'}
+            />
+          </div>
         ) : (
           <>
             <div className="chat-header">

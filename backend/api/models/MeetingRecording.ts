@@ -1,6 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 
-interface MeetingRecording extends Document {
+export interface MeetingRecording extends Document {
     meeting_id: string;
     user_id: string;
     therapist_id: string;
@@ -8,7 +8,6 @@ interface MeetingRecording extends Document {
     recording_created_at: Date;
     transcript: string | null;
     analysis: string;
-
 }
 
 const meetingRecordingSchema = new Schema({

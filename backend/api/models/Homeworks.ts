@@ -1,6 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 
-interface Homework extends Document {
+export interface Homework extends Document {
     homework_id: string;
     homework_title: string;
     homework_prompt: string;

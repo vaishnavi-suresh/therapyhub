@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { apiFetch } from '../api/client';
+import VideoCall from '../components/VideoCall';
 import './ClientDetail.css';
 
 type Client = {
@@ -46,13 +47,23 @@ type CarePlan = {
   care_plan_updated_at?: string;
 };
 
+type MeetingRecording = {
+  meeting_id: string;
+  user_id: string;
+  therapist_id: string;
+  recording_url: string;
+  recording_created_at: string;
+  transcript: string | null;
+  analysis: string;
+};
+
 export default function ClientDetail({ client, therapistId, onBack }: { client: Client; therapistId: string; onBack: () => void }) {
   const { getAccessTokenSilently } = useAuth0();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'conversations' | 'homework' | 'careplans'>('conversations');
+  const [activeTab, setActiveTab] = useState<'conversations' | 'homework' | 'careplans' | 'recordings' | 'video'>('conversations');
   const [homeworks, setHomeworks] = useState<Homework[]>([]);
   const [homeworksLoading, setHomeworksLoading] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -65,6 +76,9 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
   const [carePlansLoading, setCarePlansLoading] = useState(false);
   const [selectedCarePlanId, setSelectedCarePlanId] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [recordings, setRecordings] = useState<MeetingRecording[]>([]);
+  const [recordingsLoading, setRecordingsLoading] = useState(false);
+  const [selectedRecording, setSelectedRecording] = useState<MeetingRecording | null>(null);
 
   const fetchConversations = useCallback(async () => {
     const token = await getAccessTokenSilently({
@@ -119,6 +133,33 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
       fetchCarePlans();
     }
   }, [activeTab, fetchCarePlans]);
+
+  const fetchRecordings = useCallback(async () => {
+    setRecordingsLoading(true);
+    try {
+      const token = await getAccessTokenSilently({
+        authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
+      });
+      const list = (await apiFetch(`/meeting_recordings/${client.user_id}/${therapistId}`, { token })) as MeetingRecording[];
+      console.log('Fetched recordings:', list);
+      // Sort by date (newest first)
+      list.sort((a, b) => 
+        new Date(b.recording_created_at).getTime() - new Date(a.recording_created_at).getTime()
+      );
+      setRecordings(list);
+    } catch (error) {
+      console.error('Error fetching recordings:', error);
+      setRecordings([]);
+    } finally {
+      setRecordingsLoading(false);
+    }
+  }, [client.user_id, therapistId, getAccessTokenSilently]);
+
+  useEffect(() => {
+    if (activeTab === 'recordings') {
+      fetchRecordings();
+    }
+  }, [activeTab, fetchRecordings]);
 
   const handleGenerateCarePlan = async () => {
     if (generating) return;
@@ -270,6 +311,20 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
           >
             Care Plans
           </button>
+          <button
+            type="button"
+            className={activeTab === 'recordings' ? 'active' : ''}
+            onClick={() => setActiveTab('recordings')}
+          >
+            Recordings
+          </button>
+          <button
+            type="button"
+            className={activeTab === 'video' ? 'active' : ''}
+            onClick={() => setActiveTab('video')}
+          >
+            Video Call
+          </button>
         </div>
       </header>
       <div className="client-detail-body">
@@ -312,6 +367,148 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
                     ))}
                   </div>
                 </section>
+              )}
+            </main>
+          </>
+        ) : activeTab === 'homework' ? (
+          <>
+            <aside className="conversations-sidebar homework-sidebar">
+              <h3>Homework</h3>
+              {homeworksLoading ? (
+                <p className="client-muted">Loading…</p>
+              ) : homeworks.length === 0 ? (
+                <p className="client-muted">No homework yet</p>
+              ) : null}
+              {!homeworksLoading && (
+                <>
+                  {pendingHomeworks.length > 0 && (
+                    <>
+                      <p className="homework-section-label">Pending</p>
+                      <ul className="conversation-list">
+                        {pendingHomeworks.map((h) => (
+                          <li key={h.homework_id}>
+                            <button
+                              type="button"
+                              className={`homework-item-btn ${selectedHomeworkId === h.homework_id ? 'selected' : ''}`}
+                              onClick={() => setSelectedHomeworkId(h.homework_id)}
+                            >
+                              {h.homework_created_at && (
+                                <span className="homework-date">{new Date(h.homework_created_at).toLocaleDateString()}</span>
+                              )}
+                              <span className="homework-title">{h.homework_title}</span>
+                              <span className={`homework-status ${h.homework_status}`}>{h.homework_status}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  {completedHomeworks.length > 0 && (
+                    <>
+                      <p className="homework-section-label archive-header">Completed</p>
+                      <ul className="conversation-list">
+                        {completedHomeworks.map((h) => (
+                          <li key={h.homework_id}>
+                            <button
+                              type="button"
+                              className={`homework-item-btn ${selectedHomeworkId === h.homework_id ? 'selected' : ''}`}
+                              onClick={() => setSelectedHomeworkId(h.homework_id)}
+                            >
+                              {h.homework_created_at && (
+                                <span className="homework-date">{new Date(h.homework_created_at).toLocaleDateString()}</span>
+                              )}
+                              <span className="homework-title">{h.homework_title}</span>
+                              <span className={`homework-status ${h.homework_status}`}>{h.homework_status}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    className="homework-new-btn"
+                    onClick={() => {
+                      setNewTitle('');
+                      setNewPrompt('');
+                      setSelectedHomeworkId(null);
+                    }}
+                    title="Create new homework"
+                  >
+                    <span className="homework-new-btn-icon">⊕</span>
+                    New homework
+                  </button>
+                </>
+              )}
+            </aside>
+            <main className="client-detail-main homework-main">
+              {selectedHomeworkId ? (
+                (() => {
+                  const h = homeworks.find((x) => x.homework_id === selectedHomeworkId);
+                  if (!h) return <p className="client-muted">Loading…</p>;
+                  return (
+                    <div className="homework-detail-view">
+                      {h.homework_created_at && (
+                        <p className="homework-detail-date">{new Date(h.homework_created_at).toLocaleDateString()}</p>
+                      )}
+                      <h4>{h.homework_title}</h4>
+                      <div className="homework-detail-section">
+                        <p className="homework-detail-label">Prompt</p>
+                        <pre className="homework-detail-content">{h.homework_prompt}</pre>
+                      </div>
+                      <div className="homework-detail-section">
+                        <p className="homework-detail-label">Client response</p>
+                        <pre className="homework-detail-content">{h.homework_response || '— No response yet'}</pre>
+                      </div>
+                      <div className="homework-detail-actions">
+                        {h.homework_status === 'pending' && (
+                          <button
+                            type="button"
+                            className="homework-archive-btn"
+                            onClick={handleArchiveHomework}
+                            disabled={archiving}
+                          >
+                            {archiving ? 'Archiving…' : 'Archive'}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="homework-delete-btn"
+                          onClick={handleDeleteHomework}
+                          disabled={deleting}
+                        >
+                          {deleting ? 'Deleting…' : 'Delete'}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="homework-create">
+                  <h4>Create new homework</h4>
+                  <input
+                    type="text"
+                    placeholder="Homework title"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="homework-create-input"
+                  />
+                  <textarea
+                    placeholder="Describe the homework assignment (long form text supported)"
+                    value={newPrompt}
+                    onChange={(e) => setNewPrompt(e.target.value)}
+                    className="homework-create-textarea"
+                    rows={8}
+                  />
+                  <button
+                    type="button"
+                    className="homework-create-btn"
+                    onClick={handleCreateHomework}
+                    disabled={creating}
+                  >
+                    {creating ? 'Creating…' : 'Create homework'}
+                  </button>
+                </div>
               )}
             </main>
           </>
@@ -390,149 +587,208 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
               )}
             </main>
           </>
-        ) : (
+        ) : activeTab === 'recordings' ? (
           <>
             <aside className="conversations-sidebar homework-sidebar">
-              <h3>Homework</h3>
-              {homeworksLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <h3 style={{ margin: 0 }}>Recordings</h3>
+                <button
+                  type="button"
+                  onClick={fetchRecordings}
+                  disabled={recordingsLoading}
+                  style={{
+                    padding: '0.25rem 0.5rem',
+                    fontSize: '0.85rem',
+                    background: 'var(--color-bg-elevated, #f8f9fa)',
+                    border: '1px solid var(--color-border, #e0e0e0)',
+                    borderRadius: '4px',
+                    cursor: recordingsLoading ? 'not-allowed' : 'pointer',
+                    opacity: recordingsLoading ? 0.6 : 1
+                  }}
+                  title="Refresh recordings"
+                >
+                  {recordingsLoading ? 'Loading...' : '↻'}
+                </button>
+              </div>
+              {recordingsLoading ? (
                 <p className="client-muted">Loading…</p>
-              ) : homeworks.length === 0 ? (
-                <p className="client-muted">No homework yet</p>
-              ) : null}
-              {!homeworksLoading && (
-                <>
-                  {pendingHomeworks.length > 0 && (
-                    <>
-                      <p className="homework-section-label">Pending</p>
-                      <ul className="conversation-list">
-                        {pendingHomeworks.map((h) => (
-                          <li key={h.homework_id}>
-                            <button
-                              type="button"
-                              className={`homework-item-btn ${selectedHomeworkId === h.homework_id ? 'selected' : ''}`}
-                              onClick={() => setSelectedHomeworkId(h.homework_id)}
-                            >
-                              {h.homework_created_at && (
-                                <span className="homework-date">{new Date(h.homework_created_at).toLocaleDateString()}</span>
-                              )}
-                              <span className="homework-title">{h.homework_title}</span>
-                              <span className={`homework-status ${h.homework_status}`}>{h.homework_status}</span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                  {completedHomeworks.length > 0 && (
-                    <>
-                      <p className="homework-section-label archive-header">Completed</p>
-                      <ul className="conversation-list archive-list">
-                        {completedHomeworks.map((h) => (
-                          <li key={h.homework_id}>
-                            <button
-                              type="button"
-                              className={`homework-item-btn ${selectedHomeworkId === h.homework_id ? 'selected' : ''}`}
-                              onClick={() => setSelectedHomeworkId(h.homework_id)}
-                            >
-                              {h.homework_created_at && (
-                                <span className="homework-date">{new Date(h.homework_created_at).toLocaleDateString()}</span>
-                              )}
-                              <span className="homework-title">{h.homework_title}</span>
-                              <span className={`homework-status ${h.homework_status}`}>{h.homework_status}</span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                  <button
-                    type="button"
-                    className="homework-new-btn"
-                    onClick={() => setSelectedHomeworkId(null)}
-                    title="Create new homework"
-                  >
-                    <span className="homework-new-btn-icon">⊕</span>
-                    New homework
-                  </button>
-                </>
+              ) : recordings.length === 0 ? (
+                <p className="client-muted">No recordings yet</p>
+              ) : (
+                <ul className="conversation-list">
+                  {recordings.map((recording) => (
+                    <li key={recording.meeting_id}>
+                      <button
+                        type="button"
+                        className={selectedRecording?.meeting_id === recording.meeting_id ? 'selected' : ''}
+                        onClick={() => setSelectedRecording(recording)}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem' }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', flexWrap: 'wrap' }}>
+                          <span className="homework-date">
+                            {new Date(recording.recording_created_at).toLocaleDateString()}
+                          </span>
+                          <span className="homework-title">Recording</span>
+                          {recording.transcript && (
+                            <span className="homework-status completed">Has Transcript</span>
+                          )}
+                          {recording.analysis && (
+                            <span className="homework-status completed" style={{ backgroundColor: '#e3f2fd', color: '#1976d2' }}>
+                              Has Summary
+                            </span>
+                          )}
+                        </div>
+                        {recording.analysis ? (
+                          <p 
+                            className="client-muted" 
+                            style={{ 
+                              fontSize: '0.85rem', 
+                              margin: 0, 
+                              textAlign: 'left',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              lineHeight: '1.3',
+                              fontWeight: 500
+                            }}
+                            title={recording.analysis}
+                          >
+                            {recording.analysis}
+                          </p>
+                        ) : recording.transcript ? (
+                          <p 
+                            className="client-muted" 
+                            style={{ 
+                              fontSize: '0.85rem', 
+                              margin: 0, 
+                              textAlign: 'left',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              lineHeight: '1.3',
+                              fontStyle: 'italic'
+                            }}
+                          >
+                            Summary being generated...
+                          </p>
+                        ) : null}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
             </aside>
             <main className="client-detail-main homework-main">
-              {selectedHomeworkId ? (
-                (() => {
-                  const h = homeworks.find((x) => x.homework_id === selectedHomeworkId);
-                  if (!h) return null;
-                  return (
-                    <div className="homework-detail-view">
-                      {h.homework_created_at && (
-                        <p className="homework-detail-date">{new Date(h.homework_created_at).toLocaleDateString()}</p>
-                      )}
-                      <h4>{h.homework_title}</h4>
-                      <div className="homework-detail-section">
-                        <p className="homework-detail-label">Prompt</p>
-                        <pre className="homework-detail-content">{h.homework_prompt}</pre>
-                      </div>
-                      <div className="homework-detail-section">
-                        <p className="homework-detail-label">Client response</p>
-                        <pre className="homework-detail-content">{h.homework_response || '— No response yet'}</pre>
-                      </div>
-                      <div className="homework-detail-actions">
-                        {h.homework_status === 'pending' && (
-                          <button
-                            type="button"
-                            className="homework-archive-btn"
-                            onClick={handleArchiveHomework}
-                            disabled={archiving || deleting}
-                          >
-                            {archiving ? 'Archiving…' : 'Archive'}
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          className="homework-delete-btn"
-                          onClick={handleDeleteHomework}
-                          disabled={archiving || deleting}
-                        >
-                          {deleting ? 'Deleting…' : 'Delete'}
-                        </button>
+              {selectedRecording ? (
+                <div className="homework-detail-view">
+                  <p className="homework-detail-date">
+                    Recorded: {new Date(selectedRecording.recording_created_at).toLocaleString()}
+                  </p>
+                  <div className="recording-video-container">
+                    <video
+                      controls
+                      src={selectedRecording.recording_url}
+                      className="recording-video"
+                      style={{ width: '100%', maxWidth: '100%', borderRadius: '8px' }}
+                      onError={(e) => {
+                        console.error('Video loading error:', e);
+                        console.error('Video URL:', selectedRecording.recording_url);
+                      }}
+                      onLoadStart={() => {
+                        console.log('Video loading started:', selectedRecording.recording_url);
+                      }}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                    {!selectedRecording.recording_url && (
+                      <p className="client-muted" style={{ fontStyle: 'italic', marginTop: '1rem' }}>
+                        No video URL available for this recording.
+                      </p>
+                    )}
+                  </div>
+                  {selectedRecording.transcript ? (
+                    <div className="homework-detail-section" style={{ marginTop: '1.5rem' }}>
+                      <p className="homework-detail-label">Transcript</p>
+                      <div 
+                        className="homework-detail-content" 
+                        style={{ 
+                          whiteSpace: 'pre-wrap',
+                          padding: '1rem',
+                          backgroundColor: 'var(--color-bg-elevated, #f8f9fa)',
+                          borderRadius: '8px',
+                          border: '1px solid var(--color-border, #e0e0e0)',
+                          maxHeight: '400px',
+                          overflowY: 'auto',
+                          lineHeight: '1.6',
+                          fontSize: '0.95rem'
+                        }}
+                      >
+                        {selectedRecording.transcript}
                       </div>
                     </div>
-                  );
-                })()
+                  ) : (
+                    <div className="homework-detail-section" style={{ marginTop: '1.5rem' }}>
+                      <p className="homework-detail-label">Transcript</p>
+                      <p className="client-muted" style={{ fontStyle: 'italic' }}>
+                        Transcript is being generated... Please check back in a few minutes.
+                      </p>
+                    </div>
+                  )}
+                  {selectedRecording.analysis ? (
+                    <div className="homework-detail-section" style={{ marginTop: '1.5rem' }}>
+                      <p className="homework-detail-label">Session Summary</p>
+                      <div 
+                        className="homework-detail-content" 
+                        style={{ 
+                          whiteSpace: 'pre-wrap',
+                          padding: '1rem',
+                          backgroundColor: 'var(--color-bg-elevated, #f8f9fa)',
+                          borderRadius: '8px',
+                          border: '1px solid var(--color-border, #e0e0e0)',
+                          maxHeight: '400px',
+                          overflowY: 'auto',
+                          lineHeight: '1.6',
+                          fontSize: '0.95rem'
+                        }}
+                      >
+                        {selectedRecording.analysis}
+                      </div>
+                    </div>
+                  ) : selectedRecording.transcript ? (
+                    <div className="homework-detail-section" style={{ marginTop: '1.5rem' }}>
+                      <p className="homework-detail-label">Session Summary</p>
+                      <p className="client-muted" style={{ fontStyle: 'italic' }}>
+                        Summary is being generated... Please check back in a few minutes.
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
               ) : (
-              <div className="homework-create">
-                <h4>Create new homework</h4>
-                <label>
-                  Title
-                  <input
-                    type="text"
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    placeholder="Homework title"
-                  />
-                </label>
-                <label>
-                  Prompt
-                  <textarea
-                    value={newPrompt}
-                    onChange={(e) => setNewPrompt(e.target.value)}
-                    placeholder="Describe the homework assignment (long form text supported)"
-                    rows={6}
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="homework-create-btn"
-                  onClick={handleCreateHomework}
-                  disabled={!newTitle.trim() || !newPrompt.trim() || creating}
-                >
-                  {creating ? 'Creating…' : 'Create homework'}
-                </button>
-              </div>
+                <div className="homework-create">
+                  <h4>Meeting Recordings</h4>
+                  <p className="client-muted">
+                    {recordings.length === 0
+                      ? 'No recordings available yet. Recordings will appear here after video sessions are completed.'
+                      : 'Select a recording from the list to view it.'}
+                  </p>
+                </div>
               )}
             </main>
           </>
-        )}
+        ) : activeTab === 'video' ? (
+          <div className="client-detail-video-container">
+            <VideoCall
+              therapistId={therapistId}
+              clientId={client.user_id}
+              userName={`${client.first_name} ${client.last_name}`}
+              userRole="therapist"
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );

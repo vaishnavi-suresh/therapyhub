@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { getHomeworkController, getAllHomeworksController, createHomeworkController, updateHomeworkController, deleteHomeworkController } from '../controllers/homeworks';
+import { 
+  getHomeworkController, 
+  getAllHomeworksController, 
+  createHomeworkController, 
+  updateHomeworkController, 
+  deleteHomeworkController 
+} from '../controllers/homeworks';
 
 const homeworksRouter = Router();
 
