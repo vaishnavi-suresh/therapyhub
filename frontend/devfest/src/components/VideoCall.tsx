@@ -221,12 +221,44 @@ function Controls() {
   const micOn = localParticipant?.micOn ?? false;
   const webcamOn = localParticipant?.webcamOn ?? false;
 
+  const handleToggleMic = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      console.log('Toggling mic, current state:', micOn);
+      toggleMic();
+    } catch (error) {
+      console.error('Error toggling mic:', error);
+    }
+  };
+
+  const handleToggleWebcam = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      console.log('Toggling webcam, current state:', webcamOn);
+      toggleWebcam();
+    } catch (error) {
+      console.error('Error toggling webcam:', error);
+    }
+  };
+
+  const handleLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      leave();
+    } catch (error) {
+      console.error('Error leaving meeting:', error);
+    }
+  };
+
   return (
     <div className="video-controls">
       <button
         type="button"
         className={`video-control-btn ${micOn ? 'active' : ''}`}
-        onClick={() => toggleMic()}
+        onClick={handleToggleMic}
         title={micOn ? 'Mute microphone' : 'Unmute microphone'}
       >
         <span>{micOn ? 'Mute' : 'Unmute'}</span>
@@ -234,7 +266,7 @@ function Controls() {
       <button
         type="button"
         className={`video-control-btn ${webcamOn ? 'active' : ''}`}
-        onClick={() => toggleWebcam()}
+        onClick={handleToggleWebcam}
         title={webcamOn ? 'Turn off camera' : 'Turn on camera'}
       >
         <span>{webcamOn ? 'Camera On' : 'Camera Off'}</span>
@@ -242,7 +274,7 @@ function Controls() {
       <button
         type="button"
         className="video-control-btn video-control-btn-leave"
-        onClick={() => leave()}
+        onClick={handleLeave}
         title="Leave meeting"
       >
         <span>Leave</span>
@@ -286,7 +318,7 @@ function MeetingView({
     },
     onParticipantLeft: () => {
       // Trigger a check to stop recording when participant leaves
-      console.log('👋 Participant left event fired - current participants:', participants.size);
+      console.log('Participant left event fired - current participants:', participants.size);
       setShouldCheckStop((prev) => prev + 1);
     },
   });
@@ -306,7 +338,7 @@ function MeetingView({
   
   // Debug logging for participant count
   useEffect(() => {
-    console.log('👥 Participant count changed:', { 
+    console.log('Participant count changed:', { 
       totalParticipants, 
       isRecording, 
       recordingStarted: recordingStartedRef.current,
@@ -329,10 +361,10 @@ function MeetingView({
           setIsRecording(true);
           
           // Start recording (no webhook - will use manual save for localhost)
-          console.log('🎬 Starting recording (localhost mode - manual save)');
+          console.log('Starting recording (localhost mode - manual save)');
           await startRecording();
           
-          console.log('✅ Recording started successfully');
+          console.log('Recording started successfully');
         } catch (error) {
           console.error('Failed to start recording:', error);
           recordingStartedRef.current = false;
@@ -349,18 +381,18 @@ function MeetingView({
     // This effect runs when totalParticipants, isRecording, joined, or shouldCheckStop changes
     // shouldCheckStop is incremented when onParticipantLeft fires, triggering this check
     if (totalParticipants < 2 && recordingStartedRef.current && isRecording && joined === 'JOINED') {
-      console.log('🛑 Participant count dropped below 2, stopping recording. Count:', totalParticipants, 'shouldCheckStop:', shouldCheckStop);
+      console.log('Participant count dropped below 2, stopping recording. Count:', totalParticipants, 'shouldCheckStop:', shouldCheckStop);
       
       const handleStopAndSave = async () => {
         try {
-          console.log('🛑 Calling stopRecording()...');
+          console.log('Calling stopRecording()...');
           stopRecording();
           recordingStartedRef.current = false;
           setIsRecording(false);
-          console.log('✅ Recording stopped successfully - participants left (from useEffect)');
+          console.log('Recording stopped successfully - participants left (from useEffect)');
           
           // Fetch recording URL and save manually (localhost mode)
-          console.log('🔧 Fetching recording URL and saving manually...');
+          console.log('Fetching recording URL and saving manually...');
           // Wait a bit for VideoSDK to process the recording
           setTimeout(async () => {
             try {
@@ -369,7 +401,7 @@ function MeetingView({
               });
               
               // Get VideoSDK token for API calls
-              console.log('📹 Fetching VideoSDK token for API calls...');
+              console.log('Fetching VideoSDK token for API calls...');
               const videoSDKTokenResponse = await apiFetch('/videosdk/token', {
                 method: 'POST',
                 token: authToken,
@@ -377,10 +409,10 @@ function MeetingView({
               });
               
               const videoSDKToken = videoSDKTokenResponse.token;
-              console.log('✅ Got VideoSDK token');
+              console.log('Got VideoSDK token');
               
               // Fetch recordings from VideoSDK API by roomId
-              console.log('📹 Fetching recordings from VideoSDK API for meeting:', meetingId);
+              console.log('Fetching recordings from VideoSDK API for meeting:', meetingId);
               const recordingsResponse = await fetch(`https://api.videosdk.live/v2/recordings?roomId=${meetingId}`, {
                 headers: {
                   'Authorization': videoSDKToken,
@@ -390,18 +422,18 @@ function MeetingView({
               
               if (recordingsResponse.ok) {
                 const recordings = await recordingsResponse.json();
-                console.log('📹 Fetched recordings list:', recordings);
+                console.log('Fetched recordings list:', recordings);
                 
                 if (recordings.data && recordings.data.length > 0) {
                   // Get the latest recording (first in the list)
                   const latestRecording = recordings.data[0];
                   const recordingId = latestRecording.id || latestRecording.recordingId;
                   
-                  console.log('📹 Latest recording ID:', recordingId);
+                  console.log('Latest recording ID:', recordingId);
                   
                   // Fetch the specific recording by ID to get fileUrl
                   if (recordingId) {
-                    console.log('📹 Fetching recording details by ID:', recordingId);
+                    console.log('Fetching recording details by ID:', recordingId);
                     const recordingDetailResponse = await fetch(`https://api.videosdk.live/v2/recordings/${recordingId}`, {
                       headers: {
                         'Authorization': videoSDKToken,
@@ -411,42 +443,42 @@ function MeetingView({
                     
                     if (recordingDetailResponse.ok) {
                       const recordingDetail = await recordingDetailResponse.json();
-                      console.log('📹 Recording details:', recordingDetail);
+                      console.log('Recording details:', recordingDetail);
                       
                       // Get fileUrl from the file object
                       const fileUrl = recordingDetail?.file?.fileUrl || recordingDetail?.fileUrl || recordingDetail?.file?.filePath;
                       
                       if (fileUrl) {
-                        console.log('💾 Saving recording manually via API:', { meetingId, fileUrl });
+                        console.log('Saving recording manually via API:', { meetingId, fileUrl });
                         await apiFetch('/meeting_recordings/manual-save', {
                           method: 'POST',
                           token: authToken,
                           body: JSON.stringify({ meetingId, fileUrl }),
                         });
-                        console.log('✅ Recording saved successfully via manual endpoint');
+                        console.log('Recording saved successfully via manual endpoint');
                       } else {
-                        console.warn('⚠️ No fileUrl found in recording details:', recordingDetail);
+                        console.warn('No fileUrl found in recording details:', recordingDetail);
                       }
                     } else {
                       const errorText = await recordingDetailResponse.text();
-                      console.error('❌ Failed to fetch recording details:', recordingDetailResponse.status, errorText);
+                      console.error('Failed to fetch recording details:', recordingDetailResponse.status, errorText);
                     }
                   } else {
-                    console.warn('⚠️ No recordingId found in recording data');
+                    console.warn('No recordingId found in recording data');
                   }
                 } else {
-                  console.warn('⚠️ No recordings found in response');
+                  console.warn('No recordings found in response');
                 }
               } else {
                 const errorText = await recordingsResponse.text();
-                console.error('❌ Failed to fetch recordings:', recordingsResponse.status, errorText);
+                console.error('Failed to fetch recordings:', recordingsResponse.status, errorText);
               }
             } catch (error) {
-              console.error('❌ Failed to fetch/save recording manually:', error);
+              console.error('Failed to fetch/save recording manually:', error);
             }
           }, 5000); // Wait 5 seconds for VideoSDK to process
         } catch (error: any) {
-          console.error('❌ Failed to stop recording:', error);
+          console.error('Failed to stop recording:', error);
         }
       };
       

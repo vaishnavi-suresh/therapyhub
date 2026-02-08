@@ -343,6 +343,8 @@
   padding: 1.5rem;
   background: rgba(0, 0, 0, 0.5);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 200;
 }
 
 .video-control-btn {
@@ -359,6 +361,10 @@
   cursor: pointer;
   transition: all 0.2s;
   min-width: 100px;
+  position: relative;
+  z-index: 201;
+  pointer-events: auto;
+  user-select: none;
 }
 
 .video-control-btn:hover {
@@ -383,6 +389,8 @@
 .video-control-btn span {
   font-size: 0.875rem;
   font-weight: 500;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Loading and Error States */

@@ -149,9 +149,11 @@ OUTPUT FORMAT:
 `;
 
 const transcriptSummaryPrompt = (transcript: string) => `
-You are a licensed mental health clinician summarizing a transcript of a therapy session.
 
-Your task is to analyze the transcript and produce a summary of the session.
+Your task is to analyze the transcript of the following therapy session. Be brief and to the point.
+
+Transcript:
+${transcript}
 
 Return the summary.
 `;

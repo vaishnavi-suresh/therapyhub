@@ -79,6 +79,7 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
   const [recordings, setRecordings] = useState<MeetingRecording[]>([]);
   const [recordingsLoading, setRecordingsLoading] = useState(false);
   const [selectedRecording, setSelectedRecording] = useState<MeetingRecording | null>(null);
+  const [deletingRecording, setDeletingRecording] = useState(false);
 
   const fetchConversations = useCallback(async () => {
     const token = await getAccessTokenSilently({
@@ -160,6 +161,39 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
       fetchRecordings();
     }
   }, [activeTab, fetchRecordings]);
+
+  const handleDeleteRecording = async (recording: MeetingRecording, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation(); // Prevent selecting the recording when clicking delete from list
+    }
+    if (!window.confirm('Are you sure you want to delete this recording? This cannot be undone.')) {
+      return;
+    }
+
+    setDeletingRecording(true);
+    try {
+      const token = await getAccessTokenSilently({
+        authorizationParams: { audience: import.meta.env.VITE_AUTH0_AUDIENCE },
+      });
+      await apiFetch(`/meeting_recordings/${client.user_id}/${therapistId}/${recording.meeting_id}`, {
+        method: 'DELETE',
+        token,
+      });
+      
+      // If the deleted recording was selected, clear selection
+      if (selectedRecording?.meeting_id === recording.meeting_id) {
+        setSelectedRecording(null);
+      }
+      
+      // Refresh the recordings list
+      await fetchRecordings();
+    } catch (err) {
+      console.error('Error deleting recording:', err);
+      alert('Failed to delete recording. Please try again.');
+    } finally {
+      setDeletingRecording(false);
+    }
+  };
 
   const handleGenerateCarePlan = async () => {
     if (generating) return;
@@ -607,7 +641,7 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
                   }}
                   title="Refresh recordings"
                 >
-                  {recordingsLoading ? 'Loading...' : '↻'}
+                  {recordingsLoading ? 'Loading...' : 'Refresh'}
                 </button>
               </div>
               {recordingsLoading ? (
@@ -628,7 +662,6 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
                           <span className="homework-date">
                             {new Date(recording.recording_created_at).toLocaleDateString()}
                           </span>
-                          <span className="homework-title">Recording</span>
                           {recording.transcript && (
                             <span className="homework-status completed">Has Transcript</span>
                           )}
@@ -637,6 +670,25 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
                               Has Summary
                             </span>
                           )}
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteRecording(recording, e)}
+                            disabled={deletingRecording}
+                            style={{
+                              marginLeft: 'auto',
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              background: 'transparent',
+                              border: '1px solid var(--color-border, #e0e0e0)',
+                              borderRadius: '4px',
+                              color: '#c53030',
+                              cursor: deletingRecording ? 'not-allowed' : 'pointer',
+                              opacity: deletingRecording ? 0.5 : 1,
+                            }}
+                            title="Delete recording"
+                          >
+                            Delete
+                          </button>
                         </div>
                         {recording.analysis ? (
                           <p 
@@ -685,15 +737,43 @@ export default function ClientDetail({ client, therapistId, onBack }: { client: 
             <main className="client-detail-main homework-main">
               {selectedRecording ? (
                 <div className="homework-detail-view">
-                  <p className="homework-detail-date">
-                    Recorded: {new Date(selectedRecording.recording_created_at).toLocaleString()}
-                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <p className="homework-detail-date" style={{ margin: 0 }}>
+                      Recorded: {new Date(selectedRecording.recording_created_at).toLocaleString()}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteRecording(selectedRecording)}
+                      disabled={deletingRecording}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        background: 'transparent',
+                        border: '1px solid #c53030',
+                        borderRadius: '8px',
+                        color: '#c53030',
+                        cursor: deletingRecording ? 'not-allowed' : 'pointer',
+                        opacity: deletingRecording ? 0.5 : 1,
+                        fontWeight: 500,
+                      }}
+                      title="Delete recording"
+                    >
+                      {deletingRecording ? 'Deleting...' : 'Delete Recording'}
+                    </button>
+                  </div>
                   <div className="recording-video-container">
                     <video
                       controls
                       src={selectedRecording.recording_url}
                       className="recording-video"
-                      style={{ width: '100%', maxWidth: '100%', borderRadius: '8px' }}
+                      style={{ 
+                        width: '100%', 
+                        height: '100%',
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        display: 'block',
+                        objectFit: 'contain'
+                      }}
                       onError={(e) => {
                         console.error('Video loading error:', e);
                         console.error('Video URL:', selectedRecording.recording_url);

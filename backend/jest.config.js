@@ -9,6 +9,8 @@ module.exports = {
     'middleware/**/*.ts',
     'api/controllers/**/*.ts',
     'api/services/**/*.ts',
+    'api/routes/**/*.ts',
+    'utils/**/*.ts',
     '!api/config/**',
     '!**/__tests__/**',
     '!**/node_modules/**',
@@ -25,9 +27,6 @@ module.exports = {
   },
   setupFiles: ['<rootDir>/__tests__/setup.ts'],
   watchman: false,
-  moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
-  },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
