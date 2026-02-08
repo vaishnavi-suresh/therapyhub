@@ -1,22 +1,24 @@
-jest.mock('../../api/config/mongo', () => {
-  const toArray = jest.fn();
-  const m = {
-    findOne: jest.fn(),
-    find: jest.fn(() => ({ toArray })),
-    insertOne: jest.fn(),
-    updateOne: jest.fn(),
-    deleteOne: jest.fn(),
-  };
-  (global as any).__meetingRecordingsServiceMocks = { ...m, toArray };
-  return {
-    __esModule: true,
-    default: {
-      db: jest.fn(() => ({
-        collection: jest.fn(() => m),
-      })),
-    },
-  };
-});
+const mockToArray = jest.fn();
+const mockFindOne = jest.fn();
+const mockFind = jest.fn(() => ({ toArray: mockToArray }));
+const mockInsertOne = jest.fn();
+const mockUpdateOne = jest.fn();
+const mockDeleteOne = jest.fn();
+const mockCollection = jest.fn(() => ({
+  findOne: mockFindOne,
+  find: mockFind,
+  insertOne: mockInsertOne,
+  updateOne: mockUpdateOne,
+  deleteOne: mockDeleteOne,
+}));
+const mockDb = jest.fn(() => ({ collection: mockCollection }));
+
+jest.mock('../../api/config/mongo', () => ({
+  __esModule: true,
+  default: {
+    db: mockDb,
+  },
+}));
 
 import {
   createMeetingRecording,
@@ -25,26 +27,10 @@ import {
   updateMeetingRecording,
   deleteMeetingRecording,
 } from '../../api/services/meeting_recordings';
-import mongoClient from '../../api/config/mongo';
 
 describe('Meeting Recordings Service', () => {
-  let mockCollection: any;
-  let mockDb: any;
-  let mockMongoClient: any;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    mockMongoClient = mongoClient as any;
-    mockDb = { collection: jest.fn() };
-    mockCollection = {
-      findOne: jest.fn(),
-      find: jest.fn(),
-      insertOne: jest.fn(),
-      updateOne: jest.fn(),
-      deleteOne: jest.fn(),
-    };
-    mockMongoClient.db = jest.fn(() => mockDb);
-    mockDb.collection = jest.fn(() => mockCollection);
   });
 
   describe('createMeetingRecording', () => {
@@ -60,13 +46,14 @@ describe('Meeting Recordings Service', () => {
       };
 
       const mockInsertedId = { insertedId: 'test-id' };
-      mockCollection.insertOne.mockResolvedValue(mockInsertedId);
-      mockCollection.findOne.mockResolvedValue(mockRecording);
+      mockInsertOne.mockResolvedValue(mockInsertedId);
+      mockFindOne.mockResolvedValue(mockRecording);
 
       const result = await createMeetingRecording(mockRecording as any);
 
-      expect(mockCollection.insertOne).toHaveBeenCalledWith(mockRecording);
-      expect(mockCollection.findOne).toHaveBeenCalledWith({ _id: mockInsertedId.insertedId });
+      expect(mockCollection).toHaveBeenCalledWith('meeting_recordings');
+      expect(mockInsertOne).toHaveBeenCalledWith(mockRecording);
+      expect(mockFindOne).toHaveBeenCalledWith({ _id: mockInsertedId.insertedId });
       expect(result).toEqual(mockRecording);
     });
   });
@@ -78,15 +65,13 @@ describe('Meeting Recordings Service', () => {
         { meeting_id: 'meeting2', user_id: 'user1', therapist_id: 'therapist1' },
       ];
 
-      const mockFind = {
-        toArray: jest.fn().mockResolvedValue(mockRecordings),
-      };
-      mockCollection.find.mockReturnValue(mockFind);
+      mockToArray.mockResolvedValue(mockRecordings);
 
       const result = await getMeetingRecordings('user1', 'therapist1');
 
-      expect(mockCollection.find).toHaveBeenCalledWith({ user_id: 'user1', therapist_id: 'therapist1' });
-      expect(mockFind.toArray).toHaveBeenCalled();
+      expect(mockCollection).toHaveBeenCalledWith('meeting_recordings');
+      expect(mockFind).toHaveBeenCalledWith({ user_id: 'user1', therapist_id: 'therapist1' });
+      expect(mockToArray).toHaveBeenCalled();
       expect(result).toEqual(mockRecordings);
     });
   });
@@ -99,16 +84,17 @@ describe('Meeting Recordings Service', () => {
         therapist_id: 'therapist1',
       };
 
-      mockCollection.findOne.mockResolvedValue(mockRecording);
+      mockFindOne.mockResolvedValue(mockRecording);
 
       const result = await getMeetingRecording('test-meeting-id');
 
-      expect(mockCollection.findOne).toHaveBeenCalledWith({ meeting_id: 'test-meeting-id' });
+      expect(mockCollection).toHaveBeenCalledWith('meeting_recordings');
+      expect(mockFindOne).toHaveBeenCalledWith({ meeting_id: 'test-meeting-id' });
       expect(result).toEqual(mockRecording);
     });
 
     it('should return null if recording not found', async () => {
-      mockCollection.findOne.mockResolvedValue(null);
+      mockFindOne.mockResolvedValue(null);
 
       const result = await getMeetingRecording('non-existent-id');
 
@@ -124,11 +110,12 @@ describe('Meeting Recordings Service', () => {
       };
 
       const mockUpdateResult = { modifiedCount: 1 };
-      mockCollection.updateOne.mockResolvedValue(mockUpdateResult);
+      mockUpdateOne.mockResolvedValue(mockUpdateResult);
 
       const result = await updateMeetingRecording('test-meeting-id', updateData as any);
 
-      expect(mockCollection.updateOne).toHaveBeenCalledWith(
+      expect(mockCollection).toHaveBeenCalledWith('meeting_recordings');
+      expect(mockUpdateOne).toHaveBeenCalledWith(
         { meeting_id: 'test-meeting-id' },
         { $set: updateData }
       );
@@ -139,11 +126,12 @@ describe('Meeting Recordings Service', () => {
   describe('deleteMeetingRecording', () => {
     it('should delete a meeting recording', async () => {
       const mockDeleteResult = { deletedCount: 1 };
-      mockCollection.deleteOne.mockResolvedValue(mockDeleteResult);
+      mockDeleteOne.mockResolvedValue(mockDeleteResult);
 
       const result = await deleteMeetingRecording('test-meeting-id');
 
-      expect(mockCollection.deleteOne).toHaveBeenCalledWith({ meeting_id: 'test-meeting-id' });
+      expect(mockCollection).toHaveBeenCalledWith('meeting_recordings');
+      expect(mockDeleteOne).toHaveBeenCalledWith({ meeting_id: 'test-meeting-id' });
       expect(result).toEqual(mockDeleteResult);
     });
   });

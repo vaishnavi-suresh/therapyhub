@@ -7,9 +7,26 @@ import {
 
 describe('Meeting Session Service', () => {
   beforeEach(() => {
-    // Clear sessions before each test
-    // Since sessions is a Map, we need to access it through the module
-    // We'll test the public API
+    // Clear all sessions before each test by deleting any that might exist
+    // We'll use the public API to clear sessions
+    const testIds = ['meeting1', 'meeting2', 'non-existent'];
+    testIds.forEach(id => {
+      const session = getSession(id);
+      if (session) {
+        deleteSession(id);
+      }
+    });
+    // Also clear by participants
+    const testPairs = [
+      ['user1', 'therapist1'],
+      ['user2', 'therapist2'],
+    ];
+    testPairs.forEach(([uid, tid]) => {
+      const mid = getSessionByParticipants(uid, tid);
+      if (mid) {
+        deleteSession(mid);
+      }
+    });
   });
 
   describe('setSession', () => {

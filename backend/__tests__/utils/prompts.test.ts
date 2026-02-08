@@ -2,7 +2,7 @@ import {
   treatmentPlanPrompt,
   therapeuticBotSystemPrompt,
   transcriptSummaryPrompt,
-} from '../../api/utils/prompts';
+} from '../../utils/prompts';
 
 describe('Prompts Utils', () => {
   describe('treatmentPlanPrompt', () => {

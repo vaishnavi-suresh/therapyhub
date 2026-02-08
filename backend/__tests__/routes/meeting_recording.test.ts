@@ -91,6 +91,7 @@ describe('meeting_recordings routes', () => {
   it('GET /:user_id/:therapist_id/:meeting_recording_id calls getMeetingDataController', async () => {
     jest.mocked(controllers.getMeetingDataController).mockImplementation(async (req, res) => {
       res.json({ meeting_id: '1' });
+      return res;
     });
 
     const res = await request(app)
