@@ -67,6 +67,15 @@ const requiredUserId = (req: Request, res: Response, next: NextFunction) => {
     next();
 };
 
+const requiredTherapistId = (req: Request, res: Response, next: NextFunction) => {
+    const requestedTherapistId = req.params.therapist_id;
+    const authUserId = req.user?.userId;
+    if (!authUserId || requestedTherapistId !== authUserId) {
+        return res.status(403).json({ message: 'Forbidden: access restricted to the therapist' });
+    }
+    next();
+};
+
 const requireUserOrTherapist = async (req: Request, res: Response, next: NextFunction) => {
     const requestedUserId = req.params.user_id;
     const authUserId = req.user?.userId;
@@ -86,4 +95,4 @@ const requireUserOrTherapist = async (req: Request, res: Response, next: NextFun
     return res.status(403).json({ message: 'Forbidden: access restricted to the user or their therapist' });
 };
 
-export { checkJwt, enrichUserFromDb, requiredRoles, requiredRoleIn, requiredUserId, requireUserOrTherapist };
+export { checkJwt, enrichUserFromDb, requiredRoles, requiredRoleIn, requiredUserId, requiredTherapistId, requireUserOrTherapist };

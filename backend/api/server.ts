@@ -8,6 +8,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { homeworksRouter } from './routes/homeworks';
+import { meetingRecordingsRouter } from './routes/meeting_recording';
+import videoSDKRouter from './routes/videoSDK';
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
@@ -25,6 +27,8 @@ app.use('/care_plans', carePlanRouter);
 app.use('/therabot_conversations', therabotConversationsRouter);
 app.use(therabotMessagesRouter);
 app.use('/homeworks', homeworksRouter);
+app.use('/meeting_recordings', meetingRecordingsRouter);
+app.use('/videosdk', videoSDKRouter);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
