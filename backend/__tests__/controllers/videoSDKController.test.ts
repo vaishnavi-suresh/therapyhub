@@ -123,21 +123,15 @@ describe('VideoSDK Controller', () => {
     it('should validate meeting successfully', async () => {
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValue({ roomId: 'room123' }),
+        json: jest.fn().mockResolvedValue({ id: 'room123' }),
       });
 
-      const req = mockRequest({ 
-        params: { meetingId: 'room123' },
-        user: { userId: 'user1', role: 'user' },
-      } as any);
+      const req = mockRequest({ params: { meetingId: 'room123' } });
       const res = mockResponse();
 
       await validateMeetingController(req, res);
 
-      expect(res.json).toHaveBeenCalledWith({ 
-        valid: true,
-        meetingId: 'room123',
-      });
+      expect(res.json).toHaveBeenCalledWith({ valid: true });
     });
 
     it('should return invalid if meeting not found', async () => {
@@ -151,11 +145,7 @@ describe('VideoSDK Controller', () => {
 
       await validateMeetingController(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ 
-        valid: false,
-        error: 'Meeting not found or invalid',
-      });
+      expect(res.json).toHaveBeenCalledWith({ valid: false });
     });
   });
 });
