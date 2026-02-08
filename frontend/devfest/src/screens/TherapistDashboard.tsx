@@ -41,33 +41,47 @@ export default function TherapistDashboard() {
 
   return (
     <div className="therapist-dashboard">
-      <h2>Clients</h2>
-      {loading ? (
-        <p className="therapist-muted">Loading…</p>
-      ) : clients.length === 0 ? (
-        <p className="therapist-muted">No clients yet</p>
-      ) : (
-        <div className="client-tiles">
-          {clients.map((c) => (
-            <button
-              key={c.user_id}
-              type="button"
-              className="client-tile"
-              onClick={() => setSelectedClient(c)}
-            >
-              <span className="client-name">
-                {c.first_name} {c.last_name}
-              </span>
-              <span className="client-email">{c.email}</span>
-              {c.last_activity && (
-                <span className="client-activity">
-                  Last active: {new Date(c.last_activity).toLocaleDateString()}
-                </span>
-              )}
-            </button>
-          ))}
+      <div className="therapist-hero">
+        <div className="therapist-hero-content">
+          <h1>Your clients</h1>
+          <p>View and manage client conversations and care plans</p>
         </div>
-      )}
+      </div>
+      <section className="therapist-section">
+        <h2>Client directory</h2>
+        {loading ? (
+          <p className="therapist-muted">Loading…</p>
+        ) : clients.length === 0 ? (
+          <div className="empty-state">
+            <p className="therapist-muted">No clients yet</p>
+            <p className="empty-hint">Clients will appear here once they connect with you.</p>
+          </div>
+        ) : (
+          <div className="client-tiles">
+            {clients.map((c) => (
+              <button
+                key={c.user_id}
+                type="button"
+                className="client-tile"
+                onClick={() => setSelectedClient(c)}
+              >
+                <div className="client-avatar">
+                  {((c.first_name?.[0] ?? '') + (c.last_name?.[0] ?? '')).toUpperCase() || '?'}
+                </div>
+                <span className="client-name">
+                  {c.first_name} {c.last_name}
+                </span>
+                <span className="client-email">{c.email}</span>
+                {c.last_activity && (
+                  <span className="client-activity">
+                    Last active {new Date(c.last_activity).toLocaleDateString()}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

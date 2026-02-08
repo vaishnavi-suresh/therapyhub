@@ -121,6 +121,7 @@ export default function Onboarding() {
     <div className="onboarding">
       <div className="onboarding-card">
         <h1>Complete your profile</h1>
+        <p>Set up your account to get started</p>
         <form onSubmit={handleSubmit} className="onboarding-form">
           <label>
             Full name

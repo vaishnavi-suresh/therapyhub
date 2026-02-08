@@ -199,9 +199,12 @@ export default function Dashboard({ profile }: { profile: Profile }) {
         </div>
         <div className="chat-messages">
           {messages.length === 0 && !selectedId && (
-            <div className="welcome">
-              <p>Hi, I&apos;m Harbor. I&apos;m here to listen and offer support.</p>
-              <p>Send a message to start our conversation.</p>
+            <div className="welcome-hero">
+              <div className="welcome-hero-content">
+                <h2>Welcome to Harbor</h2>
+                <p className="welcome-tagline">Your supportive therapeutic chat assistant</p>
+                <p className="welcome-desc">I&apos;m here to listen and offer support. Send a message to start our conversation.</p>
+              </div>
             </div>
           )}
           {messages.map((m) => (

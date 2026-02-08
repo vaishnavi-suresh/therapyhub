@@ -4,18 +4,11 @@ import { apiFetch } from './api/client';
 import Onboarding from './screens/Onboarding';
 import Dashboard from './screens/Dashboard';
 import TherapistDashboard from './screens/TherapistDashboard';
+import Auth from './screens/Auth';
 import './App.css';
 
 function App() {
-  const {
-    isLoading,
-    isAuthenticated,
-    error,
-    loginWithRedirect: login,
-    logout: auth0Logout,
-    user,
-    getAccessTokenSilently,
-  } = useAuth0();
+  const { isLoading, isAuthenticated, logout: auth0Logout, user, getAccessTokenSilently } = useAuth0();
   const [profile, setProfile] = useState<{ user_id: string; therapist_id?: string | null; role?: string } | null | undefined>(undefined);
 
   useEffect(() => {
@@ -33,9 +26,6 @@ function App() {
       .catch(() => setProfile(null));
   }, [isAuthenticated, getAccessTokenSilently]);
 
-  const signup = () =>
-    login({ authorizationParams: { screen_hint: 'signup' } });
-
   const logout = () =>
     auth0Logout({ logoutParams: { returnTo: window.location.origin } });
 
@@ -50,8 +40,14 @@ function App() {
   return isAuthenticated && profile ? (
     <div className="app-authenticated">
       <header className="app-header">
-        <span>Logged in as {user?.email}</span>
-        <button onClick={logout}>Logout</button>
+        <div className="app-brand">
+          <img src="/harbor-logo.png" alt="Harbor" className="app-logo" />
+          <span className="app-name">Harbor</span>
+        </div>
+        <div className="app-header-right">
+          <span>Logged in as {user?.email}</span>
+          <button onClick={logout}>Logout</button>
+        </div>
       </header>
       {profile.role === 'user' ? (
         <Dashboard profile={{ user_id: profile.user_id, therapist_id: profile.therapist_id ?? null, role: profile.role }} />
@@ -64,11 +60,7 @@ function App() {
       )}
     </div>
   ) : (
-    <>
-      {error && <p>Error: {error.message}</p>}
-      <button onClick={signup}>Signup</button>
-      <button onClick={() => login()}>Login</button>
-    </>
+    <Auth />
   );
 }
 

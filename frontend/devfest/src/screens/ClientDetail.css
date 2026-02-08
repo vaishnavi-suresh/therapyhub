@@ -6,7 +6,8 @@
 
 .client-detail-header {
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-elevated);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .back-btn {
@@ -14,9 +15,10 @@
   margin-bottom: 0.5rem;
   background: none;
   border: none;
-  color: #646cff;
+  color: var(--color-accent);
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .back-btn:hover {
@@ -26,12 +28,13 @@
 .client-detail-header h2 {
   margin: 0 0 0.25rem;
   font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .client-detail-header .client-email {
   margin: 0;
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-muted);
 }
 
 .client-detail-body {
@@ -41,22 +44,26 @@
 }
 
 .conversations-sidebar {
-  width: 200px;
-  min-width: 180px;
+  width: 220px;
+  min-width: 200px;
   padding: 1rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-elevated);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
 }
 
 .conversations-sidebar h3 {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
   margin: 0 0 0.75rem;
 }
 
 .client-muted {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-muted);
   font-size: 0.9rem;
   margin: 0;
 }
@@ -68,29 +75,22 @@
   overflow-y: auto;
 }
 
-.conversation-list li {
-  margin-bottom: 0.25rem;
-}
+.conversation-list li { margin-bottom: 0.25rem; }
 
 .conversation-list button {
   width: 100%;
   text-align: left;
-  padding: 0.6rem 0.75rem;
+  padding: 0.625rem 0.75rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
   cursor: pointer;
   font-size: 0.9rem;
 }
 
-.conversation-list button:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.conversation-list button.selected {
-  background: rgba(100, 108, 255, 0.25);
-}
+.conversation-list button:hover { background: var(--color-bg-card); }
+.conversation-list button.selected { background: var(--color-accent-muted); color: var(--color-accent); }
 
 .client-detail-main {
   flex: 1;
@@ -114,8 +114,9 @@
 .conversation-panel {
   flex: 1;
   min-width: 0;
-  padding: 1rem 1.5rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.25rem 1.5rem;
+  background: var(--color-bg);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -124,8 +125,9 @@
 .care-plan-panel {
   flex: 1;
   min-width: 0;
-  padding: 1rem 1.5rem;
-  background: rgba(100, 108, 255, 0.08);
+  padding: 1.25rem 1.5rem;
+  background: var(--color-bg-card);
+  border-left: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -134,7 +136,11 @@
 .conversation-panel h4,
 .care-plan-panel h4 {
   margin: 0 0 0.75rem;
-  font-size: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
   flex-shrink: 0;
 }
 
@@ -159,20 +165,24 @@
 
 .client-detail .message.user {
   align-self: flex-end;
-  background: rgba(100, 108, 255, 0.3);
+  background: var(--color-accent-muted);
+  border: 1px solid rgba(232, 145, 173, 0.35);
 }
 
 .client-detail .message.bot {
   align-self: flex-start;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
 }
 
 .client-detail .message-role {
   display: block;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   margin-bottom: 0.25rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-muted);
 }
 
 .client-detail .message p {
@@ -181,27 +191,10 @@
   word-break: break-word;
 }
 
-
 .care-plan-content {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-@media (prefers-color-scheme: light) {
-  .client-detail-header { border-bottom-color: rgba(0, 0, 0, 0.1); }
-  .client-detail-header .client-email { color: rgba(0, 0, 0, 0.6); }
-  .conversations-sidebar { border-right-color: rgba(0, 0, 0, 0.1); }
-  .conversations-sidebar h3 { color: rgba(0, 0, 0, 0.6); }
-  .client-muted { color: rgba(0, 0, 0, 0.5); }
-  .conversation-list button { color: #213547; }
-  .conversation-list button:hover { background: rgba(0, 0, 0, 0.05); }
-  .conversation-list button.selected { background: rgba(100, 108, 255, 0.15); }
-  .client-detail .message.user { background: rgba(100, 108, 255, 0.2); }
-  .client-detail .message.bot { background: rgba(0, 0, 0, 0.06); }
-  .client-detail .message-role { color: rgba(0, 0, 0, 0.7); }
-  .conversation-panel { border-right-color: rgba(0, 0, 0, 0.1); }
-  .care-plan-panel { background: rgba(100, 108, 255, 0.06); }
+  font-size: 0.9375rem;
+  line-height: 1.65;
 }

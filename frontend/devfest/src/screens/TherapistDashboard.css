@@ -1,41 +1,110 @@
 .therapist-dashboard {
-  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
-.therapist-dashboard h2 {
-  margin: 0 0 1rem;
-  font-size: 1.5rem;
+.therapist-hero {
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.therapist-hero-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+}
+
+.therapist-hero-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.therapist-hero-content p {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.therapist-section {
+  padding: 1.5rem 2rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.therapist-section h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 1.25rem;
+  color: var(--color-text-muted);
 }
 
 .therapist-muted {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
   margin: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-hint {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin: 0.25rem 0 0;
 }
 
 .client-tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1rem;
 }
 
 .client-tile {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  align-items: center;
+  padding: 1.5rem 1.25rem;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   color: inherit;
-  transition: background 0.2s, border-color 0.2s;
+  transition: all 0.2s;
 }
 
 .client-tile:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(100, 108, 255, 0.4);
+  border-color: var(--color-accent);
+  background: var(--color-accent-muted);
+  transform: translateY(-2px);
+}
+
+.client-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin-bottom: 0.75rem;
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 .client-name {
@@ -45,26 +114,13 @@
 }
 
 .client-email {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
   margin-bottom: 0.5rem;
 }
 
 .client-activity {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-@media (prefers-color-scheme: light) {
-  .therapist-muted { color: rgba(0, 0, 0, 0.5); }
-  .client-tile {
-    background: rgba(0, 0, 0, 0.03);
-    border-color: rgba(0, 0, 0, 0.1);
-  }
-  .client-tile:hover {
-    background: rgba(0, 0, 0, 0.06);
-    border-color: rgba(100, 108, 255, 0.4);
-  }
-  .client-email { color: rgba(0, 0, 0, 0.6); }
-  .client-activity { color: rgba(0, 0, 0, 0.5); }
+  color: var(--color-text-muted);
+  opacity: 0.9;
 }
