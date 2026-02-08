@@ -1,6 +1,7 @@
 jest.mock('uuid', () => ({ v4: () => 'mock-uuid' }));
 jest.mock('../../middleware/auth', () => ({
   checkJwt: (req: any, res: any, next: any) => next(),
+  enrichUserFromDb: (req: any, res: any, next: any) => next(),
   requiredRoles: () => (req: any, res: any, next: any) => next(),
   requiredUserId: (req: any, res: any, next: any) => next(),
   requireUserOrTherapist: (req: any, res: any, next: any) => next(),

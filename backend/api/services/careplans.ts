@@ -11,6 +11,10 @@ const getCarePlan = async (care_plan_id: string) => {
     return carePlan;
 };
 
+const getCarePlansByUserAndTherapist = async (user_id: string, therapist_id: string) => {
+    return carePlanCollection.find({ user_id, therapist_id }).sort({ care_plan_created_at: -1 }).toArray();
+};
+
 const createCarePlan = async (carePlan: CarePlan) => {
     const result = await carePlanCollection.insertOne(carePlan);
     return result.insertedId;
@@ -25,4 +29,4 @@ const deleteCarePlan = async (care_plan_id: string) => {
     const result = await carePlanCollection.deleteOne({care_plan_id});
     return result.deletedCount;
 };
-export { getCarePlan, createCarePlan, updateCarePlan, deleteCarePlan };
+export { getCarePlan, getCarePlansByUserAndTherapist, createCarePlan, updateCarePlan, deleteCarePlan };

@@ -1,12 +1,13 @@
 import express from 'express';
 import carePlanRouter from './routes/carePlan';
-import conversationRouter from './routes/conversations';
-import messageRouter from './routes/message';
+import therabotConversationsRouter from './routes/therabot_conversations';
+import therabotMessagesRouter from './routes/therabot_messages';
 import userRouter from './routes/users';
 import morgan from 'morgan';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import { homeworksRouter } from './routes/homeworks';
 dotenv.config();
 
 const PORT = process.env.PORT || 3000;
@@ -21,8 +22,9 @@ app.use(cors({
 app.use(helmet());
 app.use(userRouter);
 app.use('/care_plans', carePlanRouter);
-app.use('/conversations', conversationRouter);
-app.use(messageRouter);
+app.use('/therabot_conversations', therabotConversationsRouter);
+app.use(therabotMessagesRouter);
+app.use('/homeworks', homeworksRouter);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

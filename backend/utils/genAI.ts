@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
-
 import { treatmentPlanPrompt, therapeuticBotSystemPrompt } from './prompts';
+import { Homework } from '../api/models/Homeworks';
 dotenv.config();
 
 const ai = new GoogleGenAI({
@@ -11,8 +11,8 @@ const ai = new GoogleGenAI({
   apiVersion: 'v1',
 });
 
-const createCarePlan = async (messages: string[]): Promise<string> => {
-  const prompt = treatmentPlanPrompt(messages.join('\n'));
+const createCarePlanFromData = async (messages: string[], homeworks: Homework[]): Promise<string> => {
+  const prompt = treatmentPlanPrompt(messages.join('\n'), homeworks.join('\n'));
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
     contents: prompt,
@@ -31,4 +31,4 @@ const createTherapistBotResponse = async (messages: string[]): Promise<string> =
   return response.text ?? '';
 };
 
-export { createCarePlan, createTherapistBotResponse };
+export { createCarePlanFromData, createTherapistBotResponse };

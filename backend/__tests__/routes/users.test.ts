@@ -4,6 +4,7 @@ jest.mock('../../middleware/auth', () => ({
     if (!req.user) req.user = { sub: 'auth0|123' };
     next();
   },
+  enrichUserFromDb: (req: any, res: any, next: any) => next(),
   requiredRoles: () => (req: any, res: any, next: any) => next(),
   requiredUserId: (req: any, res: any, next: any) => next(),
   requireUserOrTherapist: (req: any, res: any, next: any) => next(),

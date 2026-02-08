@@ -27,6 +27,7 @@ import {
   getAllTherapists,
   getTherapistByEmail,
   getUserByExternalAuthId,
+  getClientsByTherapistId,
   addClientToTherapist,
 } from '../../api/services/users';
 
@@ -133,6 +134,16 @@ describe('users service', () => {
       const result = await getUserByExternalAuthId('auth0|123');
       expect(m.findOne).toHaveBeenCalledWith({ external_auth_id: 'auth0|123' });
       expect(result).toEqual(user);
+    });
+  });
+
+  describe('getClientsByTherapistId', () => {
+    it('returns clients for therapist', async () => {
+      const clients = [{ user_id: 'c-1', therapist_id: 't-1' }];
+      m.toArray.mockResolvedValue(clients);
+      const result = await getClientsByTherapistId('t-1');
+      expect(m.find).toHaveBeenCalledWith({ therapist_id: 't-1' });
+      expect(result).toEqual(clients);
     });
   });
 

@@ -12,7 +12,7 @@ type Client = {
   last_activity: string | null;
 };
 
-export default function TherapistDashboard() {
+export default function TherapistDashboard({ therapistId }: { therapistId: string }) {
   const { getAccessTokenSilently } = useAuth0();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +34,7 @@ export default function TherapistDashboard() {
     return (
       <ClientDetail
         client={selectedClient}
+        therapistId={therapistId}
         onBack={() => setSelectedClient(null)}
       />
     );

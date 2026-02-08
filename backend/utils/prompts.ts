@@ -1,5 +1,5 @@
 
-const treatmentPlanPrompt = (clientMessages: string) => `
+const treatmentPlanPrompt = (clientMessages: string, homeworks: string) => `
 You are a licensed mental health clinician drafting a comprehensive treatment plan.
 
 Your task is to analyze the client messages and produce a detailed, structured treatment plan.
@@ -82,8 +82,11 @@ Create a COMPREHENSIVE treatment plan including:
     - Medical
     - Support services if relevant
 
-Client Messages:
+These are all of the client messages sent in the past week:
 ${clientMessages}
+
+These are all of the homeworks assigned to the client in the past week:
+${homeworks}
 
 Return the full treatment plan.
 `;

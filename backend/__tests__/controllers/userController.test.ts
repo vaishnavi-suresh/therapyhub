@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 jest.mock('uuid', () => ({ v4: () => 'mock-uuid' }));
 jest.mock('../../api/services/users');
+jest.mock('../../api/services/therabot_conversations', () => ({
+  getTherabotConversationsByUserId: jest.fn(),
+}));
 
 import {
   createUserController,
@@ -12,8 +15,10 @@ import {
   getTherapistByEmailController,
   getMeController,
   addClientToTherapistController,
+  getTherapistClientsController,
 } from '../../api/controllers/userController';
 import * as usersService from '../../api/services/users';
+import * as therabotConversationsService from '../../api/services/therabot_conversations';
 
 function mockRequest(overrides: Partial<Request> = {}): Request {
   return { params: {}, body: {}, ...overrides } as Request;
@@ -192,6 +197,65 @@ describe('userController', () => {
       expect(usersService.addClientToTherapist).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({ message: 'therapist_user_id and client_user_id are required' });
+    });
+  });
+
+  describe('getTherapistClientsController', () => {
+    it('returns 401 when userId is missing', async () => {
+      const req = mockRequest();
+      (req as any).user = {};
+      const res = mockResponse();
+      await getTherapistClientsController(req, res);
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({ message: 'Unauthorized' });
+    });
+
+    it('returns clients with last_activity', async () => {
+      const clients = [{ user_id: 'c-1', email: 'c@b.com' }];
+      const convos = [{ conversation_updated_at: '2024-01-15T10:00:00Z' }];
+      const req = mockRequest();
+      (req as any).user = { userId: 't-1' };
+      const res = mockResponse();
+      jest.mocked(usersService.getClientsByTherapistId).mockResolvedValue(clients as any);
+      jest.mocked(therabotConversationsService.getTherabotConversationsByUserId).mockResolvedValue(convos as any);
+      await getTherapistClientsController(req, res);
+      expect(usersService.getClientsByTherapistId).toHaveBeenCalledWith('t-1');
+      expect(therabotConversationsService.getTherabotConversationsByUserId).toHaveBeenCalledWith('c-1');
+      expect(res.json).toHaveBeenCalledWith(expect.arrayContaining([
+        expect.objectContaining({ user_id: 'c-1', last_activity: expect.any(String) }),
+      ]));
+    });
+
+    it('returns clients sorted by last_activity with mixed null', async () => {
+      const clients = [
+        { user_id: 'c-1', email: 'a@b.com' },
+        { user_id: 'c-2', email: 'b@b.com' },
+        { user_id: 'c-3', email: 'c@b.com' },
+      ];
+      const req = mockRequest();
+      (req as any).user = { userId: 't-1' };
+      const res = mockResponse();
+      jest.mocked(usersService.getClientsByTherapistId).mockResolvedValue(clients as any);
+      jest.mocked(therabotConversationsService.getTherabotConversationsByUserId)
+        .mockResolvedValueOnce([{ conversation_updated_at: '2024-01-20T10:00:00Z' }] as any)
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([{ conversation_created_at: '2024-01-10T10:00:00Z' }] as any);
+      await getTherapistClientsController(req, res);
+      const result = (res.json as jest.Mock).mock.calls[0][0];
+      expect(result[0].user_id).toBe('c-1');
+      expect(result[1].user_id).toBe('c-3');
+      expect(result[2].user_id).toBe('c-2');
+    });
+
+    it('returns clients with null last_activity when no conversations', async () => {
+      const clients = [{ user_id: 'c-1', email: 'c@b.com' }];
+      const req = mockRequest();
+      (req as any).user = { userId: 't-1' };
+      const res = mockResponse();
+      jest.mocked(usersService.getClientsByTherapistId).mockResolvedValue(clients as any);
+      jest.mocked(therabotConversationsService.getTherabotConversationsByUserId).mockResolvedValue([]);
+      await getTherapistClientsController(req, res);
+      expect(res.json).toHaveBeenCalledWith([{ ...clients[0], last_activity: null }]);
     });
   });
 });

@@ -1,7 +1,45 @@
 .dashboard {
   display: flex;
-  height: 100vh;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
   max-width: 100%;
+}
+
+.dashboard-nav {
+  display: flex;
+  gap: 0;
+  padding: 0 1.5rem;
+  background: var(--color-bg-elevated);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.dashboard-nav button {
+  padding: 1rem 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.dashboard-nav button:hover {
+  color: var(--color-text);
+}
+
+.dashboard-nav button.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.dashboard-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
 }
 
 .dashboard-sidebar {
@@ -27,6 +65,15 @@
 
 .new-chat-btn:hover {
   background: var(--color-accent-hover);
+}
+
+.dashboard-tab-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0.5rem 0 0.35rem;
 }
 
 .dashboard-sidebar h3 {
@@ -59,6 +106,12 @@
   font-size: 0.9375rem;
 }
 
+.conversation-list button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .conversation-list button:hover { background: var(--color-bg-card); }
 .conversation-list button.selected { background: var(--color-accent-muted); color: var(--color-accent); }
 
@@ -89,6 +142,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
 }
 
 .chat-header {
@@ -180,6 +234,7 @@
 .message p { margin: 0; white-space: pre-wrap; word-break: break-word; }
 
 .chat-input-wrap {
+  flex-shrink: 0;
   padding: 1.25rem 1.5rem;
   border-top: 1px solid var(--color-border);
   display: flex;
@@ -232,4 +287,107 @@
 
 .chat-actions .close-conversation-btn:hover:not(:disabled) {
   background: var(--color-accent-muted);
+}
+
+.homework-client-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.homework-placeholder {
+  padding: 2rem;
+}
+
+.homework-detail {
+  max-width: 56rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.homework-detail-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.homework-detail-prompt,
+.homework-detail-response,
+.homework-detail-response-form {
+  padding: 1rem;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.homework-detail-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.homework-detail pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.homework-detail-response-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  resize: vertical;
+  min-height: 160px;
+}
+
+.homework-detail-response-form textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.homework-submit-btn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.homework-submit-btn:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.homework-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.homework-date {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.homework-detail-date {
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
 }

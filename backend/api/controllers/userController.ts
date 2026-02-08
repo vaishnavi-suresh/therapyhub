@@ -77,10 +77,10 @@ const getMeController = async (req: Request, res: Response) => {
 const getTherapistClientsController = async (req: Request, res: Response) => {
     const therapistId = (req as any).user?.userId;
     if (!therapistId) return res.status(401).json({ message: 'Unauthorized' });
-    const { getConversationsByUserId } = await import('../services/conversations');
+    const { getTherabotConversationsByUserId } = await import('../services/therabot_conversations');
     const clients = await getClientsByTherapistId(therapistId);
     const withActivity = await Promise.all(clients.map(async (c: any) => {
-        const convos = await getConversationsByUserId(c.user_id);
+        const convos = await getTherabotConversationsByUserId(c.user_id);
         const lastActivity = convos.length > 0
             ? new Date(Math.max(...convos.map((x: any) => new Date(x.conversation_updated_at || x.conversation_created_at).getTime())))
             : null;

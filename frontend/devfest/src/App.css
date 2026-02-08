@@ -57,6 +57,15 @@
   border-color: var(--color-accent);
 }
 
+.app-main {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+}
+
 .therapist-view {
   flex: 1;
   display: flex;

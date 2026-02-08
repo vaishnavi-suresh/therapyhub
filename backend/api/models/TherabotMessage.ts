@@ -1,6 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 
-interface Message extends Document {
+interface TherabotMessage extends Document {
     message_id: string;
     conversation_id: string;
     user_id: string;
@@ -10,7 +10,7 @@ interface Message extends Document {
     message_created_at: Date;
 }
 
-const messageSchema = new Schema({
+const therabotMessageSchema = new Schema({
     message_id: { type: String, required: true },
     conversation_id: { type: String, required: true },
     user_id: { type: String, required: true },
@@ -20,6 +20,6 @@ const messageSchema = new Schema({
     message_created_at: { type: Date, required: true },
 });
 
-const Message = model<Message>('Message', messageSchema);
+const TherabotMessage = model<TherabotMessage>('TherabotMessage', therabotMessageSchema, 'therabot_messages');
 
-export { Message };
+export { TherabotMessage };

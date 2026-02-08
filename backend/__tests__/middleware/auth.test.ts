@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { requiredRoles, requiredUserId, requireUserOrTherapist } from '../../middleware/auth';
+import { requiredRoles, requiredUserId, requireUserOrTherapist, enrichUserFromDb, requiredRoleIn } from '../../middleware/auth';
 
 jest.mock('../../api/services/users', () => ({
   getUser: jest.fn(),
+  getUserByExternalAuthId: jest.fn(),
 }));
 
-import { getUser } from '../../api/services/users';
+import { getUser, getUserByExternalAuthId } from '../../api/services/users';
 
 let mockNext: NextFunction;
 
@@ -178,6 +179,81 @@ describe('requireUserOrTherapist', () => {
     const res = mockResponse();
     jest.mocked(getUser).mockRejectedValue(new Error('DB error'));
     await requireUserOrTherapist(req, res, mockNext);
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(mockNext).not.toHaveBeenCalled();
+  });
+});
+
+describe('enrichUserFromDb', () => {
+  beforeEach(() => {
+    jest.mocked(getUserByExternalAuthId).mockReset();
+  });
+
+  it('calls next when sub is missing', async () => {
+    const req = mockRequest({ user: {} });
+    const res = mockResponse();
+    await enrichUserFromDb(req, res, mockNext);
+    expect(getUserByExternalAuthId).not.toHaveBeenCalled();
+    expect(mockNext).toHaveBeenCalled();
+  });
+
+  it('enriches req.user when user found', async () => {
+    const req = mockRequest();
+    (req as any).user = { sub: 'auth0|123' };
+    const res = mockResponse();
+    jest.mocked(getUserByExternalAuthId).mockResolvedValue({ user_id: 'u-1', role: 'user' } as any);
+    await enrichUserFromDb(req, res, mockNext);
+    expect(getUserByExternalAuthId).toHaveBeenCalledWith('auth0|123');
+    expect((req.user as any).userId).toBe('u-1');
+    expect((req.user as any).role).toBe('user');
+    expect(mockNext).toHaveBeenCalled();
+  });
+
+  it('calls next without enriching when user not found', async () => {
+    const req = mockRequest();
+    (req as any).user = { sub: 'auth0|123' };
+    const res = mockResponse();
+    jest.mocked(getUserByExternalAuthId).mockResolvedValue(null);
+    await enrichUserFromDb(req, res, mockNext);
+    expect(getUserByExternalAuthId).toHaveBeenCalledWith('auth0|123');
+    expect(mockNext).toHaveBeenCalled();
+  });
+
+  it('calls next when getUserByExternalAuthId throws', async () => {
+    const req = mockRequest();
+    (req as any).user = { sub: 'auth0|123' };
+    const res = mockResponse();
+    jest.mocked(getUserByExternalAuthId).mockRejectedValue(new Error('DB error'));
+    await enrichUserFromDb(req, res, mockNext);
+    expect(mockNext).toHaveBeenCalled();
+  });
+});
+
+describe('requiredRoleIn', () => {
+  it('calls next when user role is in allowed roles', () => {
+    const req = mockRequest({ user: { role: 'therapist' } });
+    const res = mockResponse();
+    const middleware = requiredRoleIn('user', 'therapist');
+    middleware(req, res, mockNext);
+    expect(mockNext).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 when user role is not in allowed roles', () => {
+    const req = mockRequest({ user: { role: 'user' } });
+    const res = mockResponse();
+    const middleware = requiredRoleIn('therapist', 'admin');
+    middleware(req, res, mockNext);
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Forbidden' });
+    expect(mockNext).not.toHaveBeenCalled();
+  });
+
+  it('returns 403 when user has no role', () => {
+    const req = mockRequest({ user: {} });
+    const res = mockResponse();
+    const middleware = requiredRoleIn('user');
+    middleware(req, res, mockNext);
     expect(res.status).toHaveBeenCalledWith(403);
     expect(mockNext).not.toHaveBeenCalled();
   });

@@ -19,7 +19,7 @@ export default function Auth() {
     return (
       <div className="auth">
         <div className="auth-card">
-          <img src="/harbor-logo.png" alt="Harbor" className="auth-logo auth-logo-sm" />
+          <img src={logo} alt="Harbor" className="auth-logo auth-logo-sm" />
           <h1>Signed in</h1>
           <p className="auth-user">{user.email ?? user.name}</p>
           <button type="button" onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>

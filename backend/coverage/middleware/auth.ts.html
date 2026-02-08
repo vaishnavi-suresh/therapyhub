@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>33/33</span>
+                <span class='fraction'>50/50</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>7/7</span>
+                <span class='fraction'>12/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>30/30</span>
+                <span class='fraction'>44/44</span>
             </div>
         
             
@@ -129,7 +129,30 @@
 <a name='L64'></a><a href='#L64'>64</a>
 <a name='L65'></a><a href='#L65'>65</a>
 <a name='L66'></a><a href='#L66'>66</a>
-<a name='L67'></a><a href='#L67'>67</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -154,6 +177,29 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -199,7 +245,7 @@
 import { expressjwt } from 'express-jwt';
 import jwksRsa from 'jwks-rsa';
 import dotenv from 'dotenv';
-import { getUser } from '../api/services/users';
+import { getUser, getUserByExternalAuthId } from '../api/services/users';
 dotenv.config();
 &nbsp;
 declare global {
@@ -223,9 +269,32 @@ const checkJwt = expressjwt({
     requestProperty: 'user',
 });
 &nbsp;
+const enrichUserFromDb = async (req: Request, res: Response, next: NextFunction) =&gt; {
+    const sub = (req.user as any)?.sub;
+    if (!sub) return next();
+    try {
+        const user = await getUserByExternalAuthId(sub);
+        if (user) {
+            (req.user as any).userId = user.user_id;
+            (req.user as any).role = user.role;
+        }
+    } catch {
+    }
+    next();
+};
+&nbsp;
 const requiredRoles = (role: string) =&gt; {
     return (req: Request, res: Response, next: NextFunction) =&gt; {
         if (req.user?.role !== role) {
+            return res.status(403).json({ message: 'Forbidden' });
+        }
+        next();
+    };
+};
+&nbsp;
+const requiredRoleIn = (...roles: string[]) =&gt; {
+    return (req: Request, res: Response, next: NextFunction) =&gt; {
+        if (!req.user?.role || !roles.includes(req.user.role)) {
             return res.status(403).json({ message: 'Forbidden' });
         }
         next();
@@ -260,7 +329,7 @@ const requireUserOrTherapist = async (req: Request, res: Response, next: NextFun
     return res.status(403).json({ message: 'Forbidden: access restricted to the user or their therapist' });
 };
 &nbsp;
-export { checkJwt, requiredRoles, requiredUserId, requireUserOrTherapist };
+export { checkJwt, enrichUserFromDb, requiredRoles, requiredRoleIn, requiredUserId, requireUserOrTherapist };
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -268,7 +337,7 @@ export { checkJwt, requiredRoles, requiredUserId, requireUserOrTherapist };
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-07T21:51:21.017Z
+                at 2026-02-08T01:51:57.948Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>53/53</span>
+                <span class='fraction'>72/72</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>44/44</span>
+                <span class='fraction'>59/59</span>
             </div>
         
             
@@ -148,7 +148,27 @@
 <a name='L83'></a><a href='#L83'>83</a>
 <a name='L84'></a><a href='#L84'>84</a>
 <a name='L85'></a><a href='#L85'>85</a>
-<a name='L86'></a><a href='#L86'>86</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -225,6 +245,26 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-yes">3x</span>
@@ -233,7 +273,7 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span></td><td class="text"><pre class="prettyprint lang-js">import { getUser, createUser, updateUser, deleteUser, getAllUsers, getAllTherapists, getTherapistByEmail, getUserByExternalAuthId, addClientToTherapist } from '../services/users';
+<span class="cline-any cline-yes">2x</span></td><td class="text"><pre class="prettyprint lang-js">import { getUser, createUser, updateUser, deleteUser, getAllUsers, getAllTherapists, getTherapistByEmail, getUserByExternalAuthId, getClientsByTherapistId, addClientToTherapist } from '../services/users';
 import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '../models/User';
@@ -309,6 +349,26 @@ const getMeController = async (req: Request, res: Response) =&gt; {
     return res.json(user);
 };
 &nbsp;
+const getTherapistClientsController = async (req: Request, res: Response) =&gt; {
+    const therapistId = (req as any).user?.userId;
+    if (!therapistId) return res.status(401).json({ message: 'Unauthorized' });
+    const { getTherabotConversationsByUserId } = await import('../services/therabot_conversations');
+    const clients = await getClientsByTherapistId(therapistId);
+    const withActivity = await Promise.all(clients.map(async (c: any) =&gt; {
+        const convos = await getTherabotConversationsByUserId(c.user_id);
+        const lastActivity = convos.length &gt; 0
+            ? new Date(Math.max(...convos.map((x: any) =&gt; new Date(x.conversation_updated_at || x.conversation_created_at).getTime())))
+            : null;
+        return { ...c, last_activity: lastActivity?.toISOString() ?? null };
+    }));
+    withActivity.sort((a: any, b: any) =&gt; {
+        if (!a.last_activity) return 1;
+        if (!b.last_activity) return -1;
+        return new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime();
+    });
+    res.json(withActivity);
+};
+&nbsp;
 const addClientToTherapistController = async (req: Request, res: Response) =&gt; {
     const { therapist_user_id, client_user_id } = req.body;
     if (!therapist_user_id || !client_user_id) {
@@ -318,14 +378,14 @@ const addClientToTherapistController = async (req: Request, res: Response) =&gt;
     res.json({ success: true });
 };
 &nbsp;
-export { createUserController, updateUserController, deleteUserController, getUserController, getMeController, getAllUsersController, getAllTherapistsController, getTherapistByEmailController, addClientToTherapistController };</pre></td></tr></table></pre>
+export { createUserController, updateUserController, deleteUserController, getUserController, getMeController, getAllUsersController, getAllTherapistsController, getTherapistByEmailController, getTherapistClientsController, addClientToTherapistController };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-07T21:51:21.008Z
+                at 2026-02-08T01:51:57.937Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
